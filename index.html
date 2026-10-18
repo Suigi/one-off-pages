@@ -513,11 +513,12 @@
     }
     function showHistory(message = '') {
       const cards = [...runs].reverse().map(run => {
-        const answered = run.entries.filter(entry => entry.status !== 'unanswered').length;
-        const correct = run.entries.filter(entry => entry.status === 'correct').length;
-        const details = run.entries.map(entry => `<li><strong>${escapeHTML(entry.prompt)}</strong><p class="history-${entry.status}">${entry.status === 'unanswered' ? 'Not answered' : entry.status === 'correct' ? 'Correct' : 'Incorrect'}</p>${entry.status === 'unanswered' ? (entry.verbResponse ? `<p><b>Verb entered so far:</b> ${escapeHTML(entry.verbResponse)}</p>` : '') : `<p><b>Your answer:</b> ${escapeHTML(entry.yourAnswer || '—')}</p><p><b>Correct answer:</b> ${escapeHTML(entry.correctAnswer || '—')}</p>`}</li>`).join('');
+        const completed = run.entries.filter(entry => entry.status !== 'unanswered');
+        const unanswered = run.entries.length - completed.length;
+        const correct = completed.filter(entry => entry.status === 'correct').length;
+        const details = completed.map(entry => `<li><strong>${escapeHTML(entry.prompt)}</strong><p class="history-${entry.status}">${entry.status === 'correct' ? 'Correct' : 'Incorrect'}</p><p><b>Your answer:</b> ${escapeHTML(entry.yourAnswer || '—')}</p><p><b>Correct answer:</b> ${escapeHTML(entry.correctAnswer || '—')}</p></li>`).join('');
         const label = {verbs:'Fill in the verb',timeline:'Place the events',spot:'Spot the mistake',combination:'Combinations'}[run.mode] || run.mode;
-        return `<article class="history-run"><h2>${escapeHTML(label)} · ${correct}/${run.entries.length} correct</h2><p class="muted small">${escapeHTML(new Date(run.startedAt).toLocaleString())} · ${answered}/${run.entries.length} answered · ${run.finishedAt ? 'Completed' : 'Unfinished'}</p>${run.finishedAt ? '' : `<button type="button" class="nav-button" data-resume="${escapeHTML(run.id)}">Resume →</button>`}<details><summary>Review questions</summary><ol>${details}</ol></details></article>`;
+        return `<article class="history-run"><h2>${escapeHTML(label)} · ${correct}/${run.entries.length} correct</h2><p class="muted small">${escapeHTML(new Date(run.startedAt).toLocaleString())} · ${unanswered} unanswered · ${run.finishedAt ? 'Completed' : 'Unfinished'}</p>${run.finishedAt ? '' : `<button type="button" class="nav-button" data-resume="${escapeHTML(run.id)}">Resume →</button>`}${completed.length ? `<details><summary>Review answered questions</summary><ol>${details}</ol></details>` : ''}</article>`;
       }).join('');
       app.innerHTML = `<p class="eyebrow">Saved on this device</p><h1>Quiz history.</h1>${message ? `<p class="error">${escapeHTML(message)}</p>` : ''}<p class="muted">Review your answers and results from earlier rounds. Unfinished quizzes can be resumed.</p>${cards || '<p>No quizzes yet. Start one to build your history.</p>'}`;
       document.querySelectorAll('[data-resume]').forEach(button => button.addEventListener('click', () => {
