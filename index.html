@@ -12,6 +12,14 @@
     header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:30px; }
     .brand { font-size:.78rem; font-weight:800; letter-spacing:.17em; text-transform:uppercase; color:var(--green); }
     .tag { border:1px solid #cdded0; border-radius:99px; padding:6px 12px; color:var(--green); font-size:.78rem; font-weight:700; white-space:nowrap; }
+    .header-actions { display:flex; align-items:center; gap:8px; } .nav-button { background:#e5efe4; color:var(--green); border:1px solid #cdded0; padding:7px 12px; min-height:38px; font-size:.83rem; }
+    .nav-button:hover { background:#d2e5d5; color:var(--green); }
+    .history-run { border:1px solid var(--line); border-radius:14px; padding:17px; margin:12px 0; background:#fafcf8; }
+    .history-run h2 { font-family:inherit; font-size:1.05rem; font-weight:800; margin:0 0 4px; letter-spacing:0; }
+    .history-run p { margin:0 0 10px; } .history-run details { margin-top:12px; } .history-run summary { cursor:pointer; font-weight:750; color:var(--green); }
+    .history-run ol { padding-left:22px; } .history-run li { padding:10px 0; border-bottom:1px solid var(--line); overflow-wrap:anywhere; }
+    .history-run li:last-child { border-bottom:0; } .history-run li p { margin:4px 0; font-size:.88rem; white-space:pre-line; }
+    .history-correct { color:var(--green); font-weight:800; } .history-incorrect { color:var(--red); font-weight:800; } .history-unanswered { color:var(--muted); font-weight:800; }
     .card { background:var(--paper); border:1px solid #e6e7dc; border-radius:26px; padding:clamp(24px,6vw,50px); box-shadow:0 18px 55px #25462a12; }
     .eyebrow { color:var(--green); text-transform:uppercase; letter-spacing:.14em; font-size:.75rem; font-weight:800; margin:0 0 13px; }
     h1 { font-family:Georgia,serif; font-size:clamp(2.35rem,7vw,4.1rem); letter-spacing:-.045em; line-height:1.08; margin:0 0 18px; font-weight:500; }
@@ -87,7 +95,7 @@
     @media(max-width:650px) { .timeline svg { display:none; } .timeline-mobile { display:block; } }
     @media(max-width:500px) {
       .shell { width:calc(100% - 20px); padding:16px 0 28px; }
-      header { margin-bottom:14px; } .tag { font-size:.69rem; padding:5px 8px; }
+      header { margin-bottom:14px; } .tag { display:none; } .nav-button { min-height:44px; }
       .card { padding:23px 18px; border-radius:18px; } .mode-list,.comparison { grid-template-columns:1fr; }
       .mode-card { min-height:76px; } .place-board { padding:14px 8px 20px; }
       .place-slot { font-size:.72rem; height:112px; padding:7px 3px; } .bracket-slot { height:78px; }
@@ -98,9 +106,9 @@
 </head>
 <body>
   <main class="shell">
-    <header><div class="brand">The Grammar Studio</div><div class="tag">Past tense practice</div></header>
+    <header><div class="brand">The Grammar Studio</div><div class="header-actions"><div class="tag">Past tense practice</div><button type="button" class="nav-button" id="quiz-nav">Quiz</button><button type="button" class="nav-button" id="history-nav">History</button></div></header>
     <section class="card" id="app" aria-live="polite"></section>
-    <div class="footer">Learn one sentence at a time · Works offline</div>
+    <div class="footer">Learn one sentence at a time · Works offline<br><span id="storage-warning"></span></div>
   </main>
   <script>
     // Each answer is the complete verb phrase, not just the main verb.
@@ -220,8 +228,25 @@
     const mistakeBank = [...questions.slice(0, 36).filter(q => q.timeline).map(q => ({q, wrong:wrongForms[q.answer] || null})), ...spotExtras];
     const app = document.getElementById('app');
     const quizLength = 20;
-    let index = 0, score = 0, activeQuestions = [], mode = 'verbs';
-    let combinationVerbScore = 0, combinationTimelineScore = 0;
+    const storageKey = 'grammar-quiz-runs-v1';
+    let index = 0, score = 0, activeQuestions = [], mode = 'verbs', activeRun = null;
+    let combinationVerbScore = 0, combinationTimelineScore = 0, storageAvailable = true;
+    function loadRuns() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        return Array.isArray(saved) ? saved.filter(run => run && Array.isArray(run.entries)) : [];
+      } catch (_) { storageAvailable = false; return []; }
+    }
+    const runs = loadRuns();
+    activeRun = [...runs].reverse().find(run => !run.finishedAt) || null;
+    function saveRuns() {
+      if (!storageAvailable) return;
+      try { localStorage.setItem(storageKey, JSON.stringify(runs)); }
+      catch (_) {
+        storageAvailable = false;
+        document.getElementById('storage-warning').textContent = 'Storage unavailable: results will last only until this page closes.';
+      }
+    }
     function shuffle(items) {
       const result = [...items];
       for (let i = result.length - 1; i > 0; i--) {
@@ -230,21 +255,56 @@
       }
       return result;
     }
+    const bankForMode = selectedMode => selectedMode === 'spot' ? mistakeBank : selectedMode === 'verbs' ? questions : questions.filter(q => q.timeline);
+    const questionKey = (selectedMode, item) => selectedMode + ':' + (selectedMode === 'spot' ? item.q.sentence + '|' + (item.wrong || 'no-mistake') : item.sentence);
+    function favoredSample(items, count, selectedMode) {
+      const latest = new Map();
+      for (const run of runs) for (const entry of run.entries) latest.set(entry.key, entry.status);
+      return items.map(item => {
+        const status = latest.get(questionKey(selectedMode, item));
+        const weight = status === 'correct' ? 1 : status === 'incorrect' ? 6 : 8;
+        return {item, rank:Math.pow(Math.random(), 1 / weight)};
+      }).sort((a,b) => b.rank-a.rank).slice(0,count).map(pick => pick.item);
+    }
     function startQuiz(selectedMode) {
       mode = selectedMode;
-      index = 0;
-      score = 0;
-      combinationVerbScore = 0;
-      combinationTimelineScore = 0;
-      if (mode === 'spot') {
-        const wrong = shuffle(mistakeBank.filter(item => item.wrong)).slice(0, quizLength / 2);
-        const correct = shuffle(mistakeBank.filter(item => !item.wrong)).slice(0, quizLength / 2);
-        activeQuestions = shuffle([...wrong, ...correct]);
-      } else {
-        const bank = mode === 'timeline' || mode === 'combination' ? questions.filter(q => q.timeline) : questions;
-        activeQuestions = shuffle(bank).slice(0, quizLength);
-      }
+      index = score = combinationVerbScore = combinationTimelineScore = 0;
+      const bank = bankForMode(mode);
+      activeQuestions = mode === 'spot'
+        ? shuffle([...favoredSample(bank.filter(item => item.wrong),quizLength/2,mode),...favoredSample(bank.filter(item => !item.wrong),quizLength/2,mode)])
+        : favoredSample(bank,quizLength,mode);
+      activeRun = {
+        id:Date.now() + '-' + Math.random().toString(36).slice(2), mode, startedAt:new Date().toISOString(), finishedAt:null,
+        entries:activeQuestions.map(item => {
+          const q = mode === 'spot' ? item.q : item;
+          return {key:questionKey(mode,item),prompt:mode === 'spot' ? fullSentence(q,item.wrong || q.answer) : mode === 'timeline' ? fullSentence(q,q.answer) : q.sentence,tense:q.tense,status:'unanswered',yourAnswer:null,correctAnswer:q.answer};
+        })
+      };
+      runs.push(activeRun);
+      saveRuns();
       showQuestion();
+    }
+    function recordAnswer(fields) {
+      Object.assign(activeRun.entries[index],fields,{answeredAt:new Date().toISOString()});
+      score = activeRun.entries.filter(entry => entry.status === 'correct').length;
+      combinationVerbScore = activeRun.entries.filter(entry => entry.verbCorrect).length;
+      combinationTimelineScore = activeRun.entries.filter(entry => entry.timelineCorrect).length;
+      saveRuns();
+    }
+    function resumeRun(run) {
+      const available = new Map(bankForMode(run.mode).map(item => [questionKey(run.mode,item),item]));
+      if (!run.entries.every(entry => available.has(entry.key))) { showHistory('Some questions in this older run are no longer available to resume.'); return; }
+      activeRun = run;
+      mode = run.mode;
+      activeQuestions = run.entries.map(entry => available.get(entry.key));
+      score = run.entries.filter(entry => entry.status === 'correct').length;
+      combinationVerbScore = run.entries.filter(entry => entry.verbCorrect).length;
+      combinationTimelineScore = run.entries.filter(entry => entry.timelineCorrect).length;
+      index = run.entries.findIndex(entry => entry.status === 'unanswered');
+      if (index === -1) { run.finishedAt ||= new Date().toISOString(); saveRuns(); showResults(); return; }
+      const pending = run.entries[index];
+      if (mode === 'combination' && pending.verbResponse) showTimelineQuestion(pending.verbResponse);
+      else showQuestion();
     }
     const escapeHTML = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const normalize = value => value.trim().toLowerCase().replace(/\s+/g,' ').replace(/[’‘]/g,"'").replace(/[.!?]+$/,'');
@@ -289,7 +349,8 @@
       return `<div class="progress-top"><span>Question ${index+1} of ${activeQuestions.length}</span><span>${score} correct so far</span></div><div class="progress" role="progressbar" aria-label="Quiz progress" aria-valuemin="0" aria-valuemax="${activeQuestions.length}" aria-valuenow="${index}"><span style="width:${index/activeQuestions.length*100}%"></span></div>`;
     }
     function showIntro() {
-      app.innerHTML = `<p class="eyebrow">A little practice, a lot of clarity</p><h1>Travel back in time.</h1><p class="muted">Choose how you’d like to practise. Each round picks ${quizLength} random questions and gives you an explanation after every answer.</p><div class="chips"><span class="chip">Past simple</span><span class="chip">Past perfect</span><span class="chip">Past progressive</span></div><div class="mode-list"><button type="button" class="mode-card" id="start-verbs"><strong>Fill in the verb →</strong><span>Complete the sentence with the correct past-tense verb phrase.</span></button><button type="button" class="mode-card" id="start-timeline"><strong>Place the events →</strong><span>Read a full sentence, then put its events in the right places on a timeline.</span></button><button type="button" class="mode-card" id="start-spot"><strong>Spot the mistake →</strong><span>Tap a wrong-tense word, or decide the sentence is already correct.</span></button><button type="button" class="mode-card" id="start-combination"><strong>Combinations →</strong><span>Type the verb first, then place both events on the timeline.</span></button></div><p class="small muted">${questions.length} sentences in the bank · No timer</p>`;
+      app.innerHTML = `<p class="eyebrow">A little practice, a lot of clarity</p><h1>Travel back in time.</h1><p class="muted">Choose how you’d like to practise. Each round picks ${quizLength} random questions and gives you an explanation after every answer.</p><div class="chips"><span class="chip">Past simple</span><span class="chip">Past perfect</span><span class="chip">Past progressive</span></div><div class="mode-list"><button type="button" class="mode-card" id="start-verbs"><strong>Fill in the verb →</strong><span>Complete the sentence with the correct past-tense verb phrase.</span></button><button type="button" class="mode-card" id="start-timeline"><strong>Place the events →</strong><span>Read a full sentence, then put its events in the right places on a timeline.</span></button><button type="button" class="mode-card" id="start-spot"><strong>Spot the mistake →</strong><span>Tap a wrong-tense word, or decide the sentence is already correct.</span></button><button type="button" class="mode-card" id="start-combination"><strong>Combinations →</strong><span>Type the verb first, then place both events on the timeline.</span></button></div><p class="small muted">${questions.length} sentences in the bank · No timer · Progress saved on this device</p>${activeRun && !activeRun.finishedAt ? '<button type="button" class="nav-button" id="resume-run">Resume unfinished quiz →</button>' : ''}`;
+      if (activeRun && !activeRun.finishedAt) document.getElementById('resume-run').addEventListener('click', () => resumeRun(activeRun));
       document.getElementById('start-verbs').addEventListener('click', () => startQuiz('verbs'));
       document.getElementById('start-timeline').addEventListener('click', () => startQuiz('timeline'));
       document.getElementById('start-spot').addEventListener('click', () => startQuiz('spot'));
@@ -308,7 +369,7 @@
         const response = input.value.trim();
         if (!response) { document.getElementById('error').textContent = 'Please enter an answer first.'; input.focus(); return; }
         const correct = normalize(response) === normalize(q.answer);
-        if (correct) score++;
+        recordAnswer({yourAnswer:response,status:correct ? 'correct' : 'incorrect'});
         showExplanation(response, correct);
       });
     }
@@ -319,7 +380,11 @@
     }
     function advance() {
       index++;
-      index === activeQuestions.length ? showResults() : showQuestion();
+      if (index === activeQuestions.length) {
+        activeRun.finishedAt = new Date().toISOString();
+        saveRuns();
+        showResults();
+      } else showQuestion();
     }
     function eventSlot(event) {
       return event.kind === 'duration' ? 'ongoing' : event.x < 300 ? 'earlier' : event.x > 420 ? 'later' : 'during';
@@ -333,6 +398,8 @@
         event.preventDefault();
         const response = input.value.trim();
         if (!response) { document.getElementById('error').textContent = 'Please enter an answer first.'; input.focus(); return; }
+        activeRun.entries[index].verbResponse = response;
+        saveRuns();
         showTimelineQuestion(response);
       });
     }
@@ -379,14 +446,14 @@
           return;
         }
         const correct = Object.entries(placed).every(([slot, eventIndex]) => eventSlot(q.timeline.events[eventIndex]) === slot);
+        const yourTimeline = slots.filter(slot => placed[slot] !== undefined).map(slot => `${slotNames[slot]}: ${q.timeline.events[placed[slot]].label}`).join('\n');
+        const correctTimeline = q.timeline.events.map(event => `${slotNames[eventSlot(event)]}: ${event.label}`).join('\n');
         if (verbResponse !== null) {
           const verbCorrect = normalize(verbResponse) === normalize(q.answer);
-          if (verbCorrect) combinationVerbScore++;
-          if (correct) combinationTimelineScore++;
-          if (verbCorrect && correct) score++;
+          recordAnswer({yourAnswer:`Verb: ${verbResponse}\nTimeline: ${yourTimeline}`,correctAnswer:`Verb: ${q.answer}\nTimeline: ${correctTimeline}`,verbResponse,verbCorrect,timelineCorrect:correct,status:verbCorrect && correct ? 'correct' : 'incorrect'});
           showCombinationExplanation(q, verbResponse, verbCorrect, placed, correct, slotNames, slots);
         } else {
-          if (correct) score++;
+          recordAnswer({yourAnswer:yourTimeline,correctAnswer:correctTimeline,timelineCorrect:correct,status:correct ? 'correct' : 'incorrect'});
           showTimelineExplanation(q, placed, correct, slotNames, slots);
         }
       });
@@ -434,8 +501,8 @@
           return;
         }
         const correct = wrong ? typeof selected === 'number' && tokens[selected].isMistake : selected === 'none';
-        if (correct) score++;
         const choice = selected === 'none' ? 'No mistake' : tokens[selected].part;
+        recordAnswer({yourAnswer:choice,correctAnswer:wrong ? `Wrong tense: ${wrong} → ${q.answer}` : 'No mistake',status:correct ? 'correct' : 'incorrect'});
         showSpotExplanation(q, wrong, choice, correct);
       });
     }
@@ -443,6 +510,20 @@
       const expected = wrong ? `Wrong tense: ${wrong}\nUse instead: ${q.answer}` : 'No mistake';
       app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>${wrong ? 'Here is the correction.' : 'This one was correct.'}</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${comparisonHTML('You selected',choice,'Correct finding',expected,correct)}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
       document.getElementById('next').addEventListener('click', advance);
+    }
+    function showHistory(message = '') {
+      const cards = [...runs].reverse().map(run => {
+        const answered = run.entries.filter(entry => entry.status !== 'unanswered').length;
+        const correct = run.entries.filter(entry => entry.status === 'correct').length;
+        const details = run.entries.map(entry => `<li><strong>${escapeHTML(entry.prompt)}</strong><p class="history-${entry.status}">${entry.status === 'unanswered' ? 'Not answered' : entry.status === 'correct' ? 'Correct' : 'Incorrect'}</p>${entry.status === 'unanswered' ? (entry.verbResponse ? `<p><b>Verb entered so far:</b> ${escapeHTML(entry.verbResponse)}</p>` : '') : `<p><b>Your answer:</b> ${escapeHTML(entry.yourAnswer || '—')}</p><p><b>Correct answer:</b> ${escapeHTML(entry.correctAnswer || '—')}</p>`}</li>`).join('');
+        const label = {verbs:'Fill in the verb',timeline:'Place the events',spot:'Spot the mistake',combination:'Combinations'}[run.mode] || run.mode;
+        return `<article class="history-run"><h2>${escapeHTML(label)} · ${correct}/${run.entries.length} correct</h2><p class="muted small">${escapeHTML(new Date(run.startedAt).toLocaleString())} · ${answered}/${run.entries.length} answered · ${run.finishedAt ? 'Completed' : 'Unfinished'}</p>${run.finishedAt ? '' : `<button type="button" class="nav-button" data-resume="${escapeHTML(run.id)}">Resume →</button>`}<details><summary>Review questions</summary><ol>${details}</ol></details></article>`;
+      }).join('');
+      app.innerHTML = `<p class="eyebrow">Saved on this device</p><h1>Quiz history.</h1>${message ? `<p class="error">${escapeHTML(message)}</p>` : ''}<p class="muted">Review your answers and results from earlier rounds. Unfinished quizzes can be resumed.</p>${cards || '<p>No quizzes yet. Start one to build your history.</p>'}`;
+      document.querySelectorAll('[data-resume]').forEach(button => button.addEventListener('click', () => {
+        const run = runs.find(item => item.id === button.dataset.resume);
+        if (run) resumeRun(run);
+      }));
     }
     function showResults() {
       app.innerHTML = `<p class="eyebrow">Quiz complete</p><h1>Nicely done.</h1><p class="sentence">${score} out of ${activeQuestions.length} correct</p>${mode === 'combination' ? `<p class="muted">Verbs: ${combinationVerbScore}/${activeQuestions.length} · Timelines: ${combinationTimelineScore}/${activeQuestions.length}<br>Both parts must be correct for a question to count.</p>` : ''}<p class="muted">The important part is noticing when an action finished, happened earlier, or was still in progress. Try again to practise each one.</p><button type="button" id="restart">Try again ↺</button>`;
@@ -455,6 +536,9 @@
       change.addEventListener('click', showIntro);
       app.appendChild(change);
     }
+    document.getElementById('quiz-nav').addEventListener('click', () => activeRun && !activeRun.finishedAt ? resumeRun(activeRun) : showIntro());
+    document.getElementById('history-nav').addEventListener('click', () => showHistory());
+    if (!storageAvailable) document.getElementById('storage-warning').textContent = 'Storage unavailable: results will last only until this page closes.';
     showIntro();
   </script>
 </body>
