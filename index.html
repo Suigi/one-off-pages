@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Past Tenses · Mini Grammar Quiz</title>
+  <style>
+    :root { color-scheme: light; --ink:#20342d; --muted:#61756c; --paper:#fffdf8; --cream:#f5f2e9; --green:#245c48; --mint:#e2f0e6; --line:#dce4d9; --orange:#e9a567; --red:#a64d3e; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:radial-gradient(circle at 10% 10%, #e5f0dd 0, transparent 34%),radial-gradient(circle at 90% 90%, #fae7cd 0, transparent 38%),var(--cream); color:var(--ink); font:16px/1.55 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    .shell { width:min(760px,calc(100% - 32px)); margin:0 auto; padding:clamp(26px,6vw,70px) 0 40px; }
+    header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:30px; }
+    .brand { font-size:.78rem; font-weight:800; letter-spacing:.17em; text-transform:uppercase; color:var(--green); }
+    .tag { border:1px solid #cdded0; border-radius:99px; padding:6px 12px; color:var(--green); font-size:.78rem; font-weight:700; white-space:nowrap; }
+    .card { background:var(--paper); border:1px solid #e6e7dc; border-radius:26px; padding:clamp(24px,6vw,50px); box-shadow:0 18px 55px #25462a12; }
+    .eyebrow { color:var(--green); text-transform:uppercase; letter-spacing:.14em; font-size:.75rem; font-weight:800; margin:0 0 13px; }
+    h1 { font-family:Georgia,serif; font-size:clamp(2.35rem,7vw,4.1rem); letter-spacing:-.045em; line-height:1.08; margin:0 0 18px; font-weight:500; }
+    h2 { font-family:Georgia,serif; font-size:clamp(1.65rem,5vw,2.4rem); letter-spacing:-.025em; line-height:1.2; margin:0 0 18px; font-weight:500; }
+    p { margin:0 0 18px; } .muted { color:var(--muted); } .small { font-size:.88rem; }
+    .chips { display:flex; flex-wrap:wrap; gap:8px; margin:25px 0 30px; }
+    .chip { background:#edf3ea; color:#285441; border-radius:99px; padding:7px 12px; font-size:.83rem; font-weight:650; }
+    button { border:0; background:var(--green); color:white; padding:13px 22px; border-radius:11px; font:700 1rem inherit; font-family:inherit; font-weight:700; cursor:pointer; min-height:48px; transition:transform .15s,background .15s; }
+    button:hover { background:#174532; transform:translateY(-1px); } button:focus-visible, input:focus-visible { outline:3px solid var(--orange); outline-offset:3px; }
+    .progress-top { display:flex; justify-content:space-between; gap:12px; color:var(--muted); font-size:.84rem; font-weight:700; margin-bottom:10px; }
+    .progress { height:8px; border-radius:20px; background:#e7e9de; overflow:hidden; margin-bottom:34px; } .progress span { display:block; height:100%; background:var(--green); border-radius:20px; transition:width .3s; }
+    .sentence { font-family:Georgia,serif; font-size:clamp(1.5rem,5vw,2.25rem); line-height:1.45; margin:18px 0 26px; }
+    .blank { color:var(--green); letter-spacing:.03em; white-space:nowrap; }
+    label { display:block; font-weight:750; margin-bottom:9px; }
+    input { display:block; width:100%; max-width:430px; border:1.5px solid #becfc0; border-radius:11px; background:#fff; padding:12px 15px; font:inherit; font-size:1.1rem; color:var(--ink); min-height:50px; }
+    input::placeholder { color:#8b9b91; } form button { margin-top:17px; } .error { color:var(--red); font-size:.9rem; line-height:1.4; margin:8px 0 0; min-height:2.8em; }
+    .result { display:inline-block; padding:6px 13px; border-radius:99px; font-size:.83rem; font-weight:800; margin-bottom:19px; } .right { background:var(--mint); color:#20583b; } .wrong { background:#fae9e2; color:#8c4335; }
+    .answer-box { border-left:4px solid var(--green); background:#f0f5ee; padding:17px 20px; border-radius:0 12px 12px 0; margin:22px 0; }
+    .answer-box span { display:block; font-size:.78rem; font-weight:800; text-transform:uppercase; letter-spacing:.1em; color:var(--green); margin-bottom:5px; }
+    .answer-box strong { font-family:Georgia,serif; font-size:1.45rem; font-weight:500; }
+    .answer-box p { margin:6px 0 0; font-size:.88rem; color:var(--muted); }
+    .explanation { margin:0 0 25px; } .explanation strong { color:var(--green); }
+    .timeline { border:1px solid var(--line); border-radius:15px; padding:16px 14px 8px; margin:24px 0 28px; background:#fafcf8; }
+    .timeline-title { font-size:.78rem; text-transform:uppercase; letter-spacing:.1em; font-weight:800; color:var(--green); margin:0 0 4px; }
+    .timeline svg { display:block; width:100%; height:auto; } .timeline .note { font-size:.78rem; color:var(--muted); margin:0 0 4px; }
+    .timeline-mobile { display:none; } .mobile-sequence { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; margin:22px 0 12px; padding:15px clamp(16px, 5vw, 28px) 0; border-top:2px solid #94ad9b; }
+    .mobile-event { position:relative; font-size:.84rem; line-height:1.3; overflow-wrap:anywhere; } .mobile-event::before { content:""; position:absolute; top:-21px; left:0; width:11px; height:11px; border-radius:50%; background:var(--green); }
+    .mobile-event:last-child { text-align:right; } .mobile-event:last-child::before { left:auto; right:0; }
+    .mobile-bracket { border:3px solid #b76a36; border-bottom:0; border-radius:9px 9px 0 0; min-height:48px; padding:6px 10px; text-align:center; color:#7d4725; font-size:.85rem; font-weight:700; margin:14px clamp(16px, 5vw, 28px) 8px; }
+    .mobile-during { position:relative; text-align:center; padding:15px 0 0; border-top:2px solid #94ad9b; font-size:.84rem; }
+    .mobile-during::before { content:""; position:absolute; top:-7px; left:calc(50% - 6px); width:12px; height:12px; border-radius:50%; background:var(--green); }
+    .timeline text { font:14px system-ui,sans-serif; fill:#30483a; } .timeline .axis { stroke:#94ad9b; stroke-width:2; } .timeline .event { fill:var(--green); } .timeline .duration { stroke:#b76a36; stroke-width:4; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+    .mode-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:25px 0; }
+    .mode-card { text-align:left; background:#edf3ea; color:var(--ink); border:1px solid #cdded0; border-radius:14px; padding:18px; height:100%; }
+    .mode-card:hover { color:white; } .mode-card strong,.mode-card span { display:block; } .mode-card span { font-size:.82rem; font-weight:400; margin-top:6px; line-height:1.4; }
+    .event-choices { display:flex; flex-wrap:wrap; gap:10px; margin:12px 0 18px; }
+    .event-choice { background:#e8f1e8; color:var(--ink); border:2px solid transparent; border-radius:12px; padding:10px 14px; font-size:.92rem; }
+    .event-choice:hover,.event-choice.selected { background:#d4e7d7; color:var(--ink); border-color:var(--green); }
+    .event-choice.assigned { background:#f5f3eb; } .event-choice small { display:block; font-weight:400; }
+    .place-board { background:#fafcf8; border:1px solid var(--line); border-radius:15px; padding:18px 14px 24px; margin-bottom:8px; }
+    .place-row { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:end; gap:7px; position:relative; }
+    .place-row::before { content:""; position:absolute; top:50%; left:8%; right:8%; height:2px; background:#94ad9b; pointer-events:none; }
+    .place-slot { position:relative; z-index:1; background:#fff; color:var(--ink); border:2px dashed #9bb9a2; border-radius:11px; padding:8px 5px; width:100%; height:100px; line-height:1.25; font-size:.82rem; overflow-wrap:anywhere; overflow:auto; }
+    .place-slot:hover { color:white; border-color:var(--green); } .place-slot.filled { border-style:solid; background:#e2f0e6; }
+    .place-slot.filled:hover { color:white; } .place-slot small { display:block; font-size:.72rem; font-weight:500; margin-bottom:3px; }
+    .bracket-slot { display:block; width:84%; height:78px; margin:0 auto 22px; border:3px dashed #b76a36; border-bottom:0; border-radius:10px 10px 0 0; background:#fff; color:var(--ink); }
+    .bracket-slot.filled,.bracket-slot:hover,.bracket-slot.filled:hover { border-style:dashed; border-color:#b76a36; border-bottom:0; background:#fff; color:var(--ink); }
+    .bracket-slot small { margin:0; } .board-direction { display:flex; justify-content:space-between; color:var(--muted); font-size:.73rem; margin-top:8px; }
+    .spot-sentence { font-family:Georgia,serif; font-size:clamp(1.35rem,5vw,2rem); line-height:1.9; margin:16px 0 25px; }
+    .spot-token { display:inline; min-height:42px; padding:3px 3px; margin:0 -3px; background:transparent; color:var(--ink); border-radius:5px; font:inherit; font-weight:400; line-height:inherit; }
+    .spot-token:hover,.spot-token.selected { background:#f5dabc; color:var(--ink); transform:none; } .spot-token.selected { box-shadow:inset 0 -3px #ab602c; }
+    .no-mistake { background:#e8f1e8; color:var(--ink); border:2px solid transparent; margin:0 0 12px; } .no-mistake.selected { border-color:var(--green); background:#d4e7d7; }
+    .no-mistake:hover { background:#d4e7d7; color:var(--ink); }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+    .footer { text-align:center; color:var(--muted); font-size:.8rem; margin-top:25px; }
+    @media(max-width:650px) { .timeline svg { display:none; } .timeline-mobile { display:block; } }
+    @media(max-width:500px) {
+      .shell { width:calc(100% - 20px); padding:16px 0 28px; }
+      header { margin-bottom:14px; } .tag { font-size:.69rem; padding:5px 8px; }
+      .card { padding:23px 18px; border-radius:18px; } .mode-list { grid-template-columns:1fr; }
+      .mode-card { min-height:76px; } .place-board { padding:14px 8px 20px; }
+      .place-slot { font-size:.72rem; height:112px; padding:7px 3px; } .bracket-slot { height:78px; }
+      .event-choice { min-height:48px; } .spot-sentence { line-height:2.1; } .actions button { flex:1 1 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header><div class="brand">The Grammar Studio</div><div class="tag">Past tense practice</div></header>
+    <section class="card" id="app" aria-live="polite"></section>
+    <div class="footer">Learn one sentence at a time · Works offline</div>
+  </main>
+  <script>
+    // Each answer is the complete verb phrase, not just the main verb.
+    const questions = [
+      { sentence:'Yesterday, Maya _______ (buy) a new notebook.', answer:'bought', tense:'Past simple', explanation:'“Yesterday” names a finished time in the past. Buy has the irregular past-simple form “bought”.' },
+      { sentence:'We _______ (watch) the match last Saturday.', answer:'watched', tense:'Past simple', explanation:'“Last Saturday” is a completed past time. A regular verb takes -ed in the past simple.' },
+      { sentence:'After the bell rang, the students _______ (leave) the classroom.', answer:'left', tense:'Past simple', explanation:'The bell rang first; the students left afterward. Both are completed past events, so use the past simple. “Left” is the past form of “leave”.', timeline:{ events:[{kind:'point',label:'Bell rang',x:190},{kind:'point',label:'Students left',x:470}] } },
+      { sentence:'Lena _______ (write) three letters during her holiday last year.', answer:'wrote', tense:'Past simple', explanation:'“Last year” places the finished activity in the past. The irregular past-simple form of “write” is “wrote”.' },
+      { sentence:'By the time the train arrived, Amir _______ (finish) his coffee.', answer:'had finished', tense:'Past perfect', explanation:'Finishing the coffee happened before the train arrived. Use had + past participle for the earlier past event.', timeline:{ events:[{kind:'point',label:'Coffee finished',x:190},{kind:'point',label:'Train arrived',x:470}] } },
+      { sentence:'She _______ (lock) the door before she went to bed.', answer:'had locked', tense:'Past perfect', explanation:'Locking the door was complete before she went to bed. The earlier action takes the past perfect: had locked.', timeline:{ events:[{kind:'point',label:'Door locked',x:190},{kind:'point',label:'Went to bed',x:470}] } },
+      { sentence:'When we reached the cinema, the film _______ (begin).', answer:'had begun', tense:'Past perfect', explanation:'The film began before we reached the cinema. “Begin” has the past participle “begun”, so the earlier event is “had begun”.', timeline:{ events:[{kind:'point',label:'Film began',x:190},{kind:'point',label:'We arrived',x:470}] } },
+      { sentence:'Tom was hungry because he _______ (skip) breakfast.', answer:'had skipped', tense:'Past perfect', explanation:'Skipping breakfast happened before Tom felt hungry. Use had + past participle to show that earlier cause.', timeline:{ events:[{kind:'point',label:'Skipped breakfast',x:190},{kind:'point',label:'Felt hungry',x:470}] } },
+      { sentence:'At eight o’clock last night, I _______ (read) a novel.', answer:'was reading', tense:'Past progressive', explanation:'Reading was in progress at a particular past moment. Use was/were + -ing: “I was reading”.', timeline:{ events:[{kind:'duration',label:'I was reading',start:130,end:520},{kind:'point',label:'8 p.m.',x:350}] } },
+      { sentence:'While Nina _______ (cook) dinner, the phone rang.', answer:'was cooking', tense:'Past progressive', explanation:'Cooking was already in progress when the phone rang. Use “was cooking” for the longer background action.', timeline:{ events:[{kind:'duration',label:'Nina was cooking',start:120,end:510},{kind:'point',label:'Phone rang',x:360}] } },
+      { sentence:'The children _______ (play) outside when it started to rain.', answer:'were playing', tense:'Past progressive', explanation:'Playing was ongoing when the rain started. The plural subject “children” takes “were playing”.', timeline:{ events:[{kind:'duration',label:'Children were playing',start:110,end:510},{kind:'point',label:'Rain started',x:365}] } },
+      { sentence:'While I _______ (walk) home, I saw a fox.', answer:'was walking', tense:'Past progressive', explanation:'Walking was the ongoing background activity; seeing the fox happened during it. Use “was walking” with “I”.', timeline:{ events:[{kind:'duration',label:'I was walking',start:120,end:510},{kind:'point',label:'Saw a fox',x:360}] } },
+      { sentence:'Last winter, our family _______ (drive) to the mountains.', answer:'drove', tense:'Past simple', explanation:'“Last winter” identifies a finished time. “Drove” is the irregular past-simple form of “drive”.' },
+      { sentence:'In 2019, Priya _______ (move) to London.', answer:'moved', tense:'Past simple', explanation:'“In 2019” is a specific completed time in the past, so use the past simple: “moved”.' },
+      { sentence:'After the rain stopped, the sun _______ (appear).', answer:'appeared', tense:'Past simple', explanation:'The rain stopped and then the sun appeared. Both events are finished, so the past simple fits.', timeline:{ events:[{kind:'point',label:'Rain stopped',x:190},{kind:'point',label:'Sun appeared',x:470}] } },
+      { sentence:'Two days ago, my brother _______ (lose) his keys.', answer:'lost', tense:'Past simple', explanation:'“Two days ago” points to a finished past time. “Lost” is the irregular past-simple form of “lose”.' },
+      { sentence:'By the time the guests arrived, we _______ (set) the table.', answer:'had set', tense:'Past perfect', explanation:'Setting the table was complete before the guests arrived. Use had + past participle; the participle of “set” is also “set”.', timeline:{ events:[{kind:'point',label:'Table set',x:190},{kind:'point',label:'Guests arrived',x:470}] } },
+      { sentence:'When I opened the fridge, I realized someone _______ (eat) the cake.', answer:'had eaten', tense:'Past perfect', explanation:'Someone ate the cake before I opened the fridge and noticed it. The earlier action takes “had eaten”.', timeline:{ events:[{kind:'point',label:'Cake eaten',x:190},{kind:'point',label:'Fridge opened',x:470}] } },
+      { sentence:'By noon, the hikers _______ (reach) the summit.', answer:'had reached', tense:'Past perfect', explanation:'“By noon” says the hike to the summit was complete before that past deadline. Use “had reached”.', timeline:{ events:[{kind:'point',label:'Summit reached',x:190},{kind:'point',label:'Noon',x:470}] } },
+      { sentence:'The street was wet because it _______ (rain) earlier.', answer:'had rained', tense:'Past perfect', explanation:'The earlier rain caused the wet street observed later. Use “had rained” for that earlier past event.', timeline:{ events:[{kind:'point',label:'Rain fell',x:190},{kind:'point',label:'Street was wet',x:470}] } },
+      { sentence:'At noon yesterday, we _______ (wait) for the bus.', answer:'were waiting', tense:'Past progressive', explanation:'Waiting was underway at a specific past moment. The plural subject “we” takes “were waiting”.', timeline:{ events:[{kind:'duration',label:'We were waiting',start:130,end:520},{kind:'point',label:'Noon',x:350}] } },
+      { sentence:'While Dad _______ (fix) the bike, the lights went out.', answer:'was fixing', tense:'Past progressive', explanation:'Fixing the bike was in progress when the lights went out. “Dad” takes “was fixing”.', timeline:{ events:[{kind:'duration',label:'Dad was fixing',start:120,end:510},{kind:'point',label:'Lights went out',x:360}] } },
+      { sentence:'The birds _______ (sing) when I opened the window.', answer:'were singing', tense:'Past progressive', explanation:'The birds were already singing when I opened the window. The plural subject “birds” takes “were singing”.', timeline:{ events:[{kind:'duration',label:'Birds were singing',start:110,end:510},{kind:'point',label:'Window opened',x:365}] } },
+      { sentence:'While Eva _______ (paint), her friend knocked on the door.', answer:'was painting', tense:'Past progressive', explanation:'Painting was ongoing when the knock happened. Use was + -ing for Eva’s background action.', timeline:{ events:[{kind:'duration',label:'Eva was painting',start:120,end:510},{kind:'point',label:'Friend knocked',x:360}] } },
+      { sentence:'Last night, Oscar _______ (make) soup for dinner.', answer:'made', tense:'Past simple', explanation:'“Last night” is a finished past time. The irregular past-simple form of “make” is “made”.' },
+      { sentence:'At the museum yesterday, we _______ (see) an ancient map.', answer:'saw', tense:'Past simple', explanation:'“Yesterday” places this completed visit in the past. The past-simple form of “see” is “saw”.' },
+      { sentence:'After the referee blew the whistle, the players _______ (stop).', answer:'stopped', tense:'Past simple', explanation:'The whistle sounded first, and then the players stopped. Both actions are complete past events; “stop” doubles its final consonant before -ed.', timeline:{ events:[{kind:'point',label:'Whistle blew',x:190},{kind:'point',label:'Players stopped',x:470}] } },
+      { sentence:'Last summer, Aisha _______ (swim) across the lake.', answer:'swam', tense:'Past simple', explanation:'“Last summer” is a completed time. “Swam” is the past-simple form of “swim”.' },
+      { sentence:'By the time I got home, my sister _______ (clean) the kitchen.', answer:'had cleaned', tense:'Past perfect', explanation:'Cleaning was already finished when I got home. Use “had cleaned” for the earlier action.', timeline:{ events:[{kind:'point',label:'Kitchen cleaned',x:190},{kind:'point',label:'I got home',x:470}] } },
+      { sentence:'When the teacher checked, the class _______ (complete) the test.', answer:'had completed', tense:'Past perfect', explanation:'The class completed the test before the teacher checked. Use had + past participle for the earlier event.', timeline:{ events:[{kind:'point',label:'Test completed',x:190},{kind:'point',label:'Teacher checked',x:470}] } },
+      { sentence:'Before the storm began, the sailors _______ (return) to port.', answer:'had returned', tense:'Past perfect', explanation:'The sailors reached port before the storm began. “Had returned” marks the earlier completed event.', timeline:{ events:[{kind:'point',label:'Sailors returned',x:190},{kind:'point',label:'Storm began',x:470}] } },
+      { sentence:'By the time Ella called, Max _______ (go) to sleep.', answer:'had gone', tense:'Past perfect', explanation:'Max went to sleep before Ella called. The past participle of “go” is “gone”, giving “had gone”.', timeline:{ events:[{kind:'point',label:'Max went to sleep',x:190},{kind:'point',label:'Ella called',x:470}] } },
+      { sentence:'At six yesterday evening, my parents _______ (prepare) dinner.', answer:'were preparing', tense:'Past progressive', explanation:'Preparing dinner was in progress at six. The plural subject “parents” takes “were preparing”.', timeline:{ events:[{kind:'duration',label:'Parents were preparing',start:110,end:520},{kind:'point',label:'6 p.m.',x:350}] } },
+      { sentence:'While Ben _______ (wash) the dishes, someone rang the doorbell.', answer:'was washing', tense:'Past progressive', explanation:'Washing was already underway when the doorbell rang. Use “was washing” for the continuing background action.', timeline:{ events:[{kind:'duration',label:'Ben was washing',start:120,end:510},{kind:'point',label:'Doorbell rang',x:360}] } },
+      { sentence:'The dog _______ (sleep) when the thunder woke it.', answer:'was sleeping', tense:'Past progressive', explanation:'Sleeping was in progress until the thunder interrupted it. The singular subject “dog” takes “was sleeping”.', timeline:{ events:[{kind:'duration',label:'Dog was sleeping',start:110,end:510},{kind:'point',label:'Thunder sounded',x:365}] } },
+      { sentence:'While we _______ (cycle) through the park, we spotted a deer.', answer:'were cycling', tense:'Past progressive', explanation:'Cycling was the ongoing activity when we spotted the deer. With “we”, use “were cycling”.', timeline:{ events:[{kind:'duration',label:'We were cycling',start:120,end:510},{kind:'point',label:'Spotted a deer',x:360}] } }
+    ];
+
+    // Wrong forms intentionally clash with the past-time context; other items have no error.
+    const wrongForms = {
+      'left':'are leaving', 'appeared':'is appearing', 'stopped':'are stopping',
+      'had finished':'has finished', 'had locked':'has locked', 'had begun':'has begun',
+      'had skipped':'has skipped', 'had set':'have set', 'had eaten':'has eaten',
+      'was cooking':'is cooking', 'were playing':'are playing', 'was walking':'am walking',
+      'was fixing':'is fixing', 'were singing':'are singing'
+    };
+    const mistakeBank = questions.filter(q => q.timeline).map(q => ({q, wrong:wrongForms[q.answer] || null}));
+    const app = document.getElementById('app');
+    const quizLength = 20;
+    let index = 0, score = 0, activeQuestions = [], mode = 'verbs';
+    let combinationVerbScore = 0, combinationTimelineScore = 0;
+    function shuffle(items) {
+      const result = [...items];
+      for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+      return result;
+    }
+    function startQuiz(selectedMode) {
+      mode = selectedMode;
+      index = 0;
+      score = 0;
+      combinationVerbScore = 0;
+      combinationTimelineScore = 0;
+      if (mode === 'spot') {
+        const wrong = shuffle(mistakeBank.filter(item => item.wrong)).slice(0, quizLength / 2);
+        const correct = shuffle(mistakeBank.filter(item => !item.wrong)).slice(0, quizLength / 2);
+        activeQuestions = shuffle([...wrong, ...correct]);
+      } else {
+        const bank = mode === 'timeline' || mode === 'combination' ? questions.filter(q => q.timeline) : questions;
+        activeQuestions = shuffle(bank).slice(0, quizLength);
+      }
+      showQuestion();
+    }
+    const escapeHTML = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const normalize = value => value.trim().toLowerCase().replace(/\s+/g,' ').replace(/[’‘]/g,"'").replace(/[.!?]+$/,'');
+    const sentenceParts = q => {
+      const [before, after] = q.sentence.split('_______');
+      return [before, after.replace(/^\s*\([^)]*\)/, '')];
+    };
+    const fullSentence = (q, answer) => {
+      const [before, after] = sentenceParts(q);
+      return before + answer + after;
+    };
+    const sentenceHTML = (q, answer) => {
+      const [before, after] = q.sentence.split('_______');
+      const ending = answer ? sentenceParts(q)[1] : after;
+      return `${escapeHTML(before)}<span class="blank">${answer ? escapeHTML(answer) : '_______'}</span>${escapeHTML(ending)}`;
+    };
+    function timelineHTML(t) {
+      if (!t) return '';
+      const shapes = t.events.map(e => e.kind === 'duration'
+        ? `<path class="duration" d="M ${e.start} 67 V 52 H ${e.end} V 67"/><text x="${(e.start+e.end)/2}" y="35" text-anchor="middle">${escapeHTML(e.label)}</text>`
+        : `<circle class="event" cx="${e.x}" cy="92" r="6"/><text x="${e.x}" y="121" text-anchor="middle">${escapeHTML(e.label)}</text>`).join('');
+      const caption = t.events.map(e => e.label).join('; ');
+      const duration = t.events.find(e => e.kind === 'duration');
+      const mobile = duration
+        ? `<div class="mobile-bracket">${escapeHTML(duration.label)}</div><div class="mobile-during">${escapeHTML(t.events.find(e => e.kind === 'point').label)}</div>`
+        : `<div class="mobile-sequence">${[...t.events].sort((a,b) => a.x-b.x).map(e => `<div class="mobile-event">${escapeHTML(e.label)}</div>`).join('')}</div>`;
+      return `<div class="timeline"><div class="timeline-title">Past events · timeline</div><svg viewBox="0 0 660 140" role="img" aria-label="Timeline, earlier to later: ${escapeHTML(caption)}"><line class="axis" x1="48" y1="92" x2="610" y2="92"/><path class="axis" d="M 601 86 L 610 92 L 601 98" fill="none"/>${shapes}<text x="48" y="136">earlier</text><text x="610" y="136" text-anchor="end">later</text></svg><div class="timeline-mobile" role="img" aria-label="Timeline, earlier to later: ${escapeHTML(caption)}">${mobile}</div><p class="note">Brackets show actions in progress; dots mark moments or completed events.</p></div>`;
+    }
+    function progressHTML() {
+      return `<div class="progress-top"><span>Question ${index+1} of ${activeQuestions.length}</span><span>${score} correct so far</span></div><div class="progress" role="progressbar" aria-label="Quiz progress" aria-valuemin="0" aria-valuemax="${activeQuestions.length}" aria-valuenow="${index}"><span style="width:${index/activeQuestions.length*100}%"></span></div>`;
+    }
+    function showIntro() {
+      app.innerHTML = `<p class="eyebrow">A little practice, a lot of clarity</p><h1>Travel back in time.</h1><p class="muted">Choose how you’d like to practise. Each round picks ${quizLength} random questions and gives you an explanation after every answer.</p><div class="chips"><span class="chip">Past simple</span><span class="chip">Past perfect</span><span class="chip">Past progressive</span></div><div class="mode-list"><button type="button" class="mode-card" id="start-verbs"><strong>Fill in the verb →</strong><span>Complete the sentence with the correct past-tense verb phrase.</span></button><button type="button" class="mode-card" id="start-timeline"><strong>Place the events →</strong><span>Read a full sentence, then put its events in the right places on a timeline.</span></button><button type="button" class="mode-card" id="start-spot"><strong>Spot the mistake →</strong><span>Tap a wrong-tense word, or decide the sentence is already correct.</span></button><button type="button" class="mode-card" id="start-combination"><strong>Combinations →</strong><span>Type the verb first, then place both events on the timeline.</span></button></div><p class="small muted">${questions.length} sentences in the bank · No timer</p>`;
+      document.getElementById('start-verbs').addEventListener('click', () => startQuiz('verbs'));
+      document.getElementById('start-timeline').addEventListener('click', () => startQuiz('timeline'));
+      document.getElementById('start-spot').addEventListener('click', () => startQuiz('spot'));
+      document.getElementById('start-combination').addEventListener('click', () => startQuiz('combination'));
+    }
+    function showQuestion() {
+      if (mode === 'timeline') { showTimelineQuestion(); return; }
+      if (mode === 'spot') { showSpotQuestion(); return; }
+      if (mode === 'combination') { showCombinationVerbQuestion(); return; }
+      const q = activeQuestions[index];
+      app.innerHTML = `${progressHTML()}<p class="eyebrow">Fill in the blank</p><h2>What form of the verb fits?</h2><p class="sentence">${sentenceHTML(q)}</p><form id="answer-form" novalidate><label for="answer">Your answer</label><input id="answer" name="answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the whole verb phrase" aria-describedby="error"><p class="error" id="error" role="alert"></p><button type="submit">Check answer →</button></form>`;
+      const input = document.getElementById('answer');
+      input.focus();
+      document.getElementById('answer-form').addEventListener('submit', event => {
+        event.preventDefault();
+        const response = input.value.trim();
+        if (!response) { document.getElementById('error').textContent = 'Please enter an answer first.'; input.focus(); return; }
+        const correct = normalize(response) === normalize(q.answer);
+        if (correct) score++;
+        showExplanation(response, correct);
+      });
+    }
+    function showExplanation(response, correct) {
+      const q = activeQuestions[index];
+      app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s why it works.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p><div class="answer-box"><span>Correct answer</span><strong>${escapeHTML(q.answer)}</strong>${correct?'':`<p>You wrote: ${escapeHTML(response)}</p>`}</div><p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
+      document.getElementById('next').addEventListener('click', advance);
+    }
+    function advance() {
+      index++;
+      index === activeQuestions.length ? showResults() : showQuestion();
+    }
+    function eventSlot(event) {
+      return event.kind === 'duration' ? 'ongoing' : event.x < 300 ? 'earlier' : event.x > 420 ? 'later' : 'during';
+    }
+    function showCombinationVerbQuestion() {
+      const q = activeQuestions[index];
+      app.innerHTML = `${progressHTML()}<p class="eyebrow">Combinations · step 1 of 2</p><h2>Type the complete verb phrase.</h2><p class="sentence">${sentenceHTML(q)}</p><form id="answer-form" novalidate><label for="answer">Your answer</label><input id="answer" name="answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the whole verb phrase" aria-describedby="error"><p class="error" id="error" role="alert"></p><button type="submit">Continue to timeline →</button></form>`;
+      const input = document.getElementById('answer');
+      input.focus();
+      document.getElementById('answer-form').addEventListener('submit', event => {
+        event.preventDefault();
+        const response = input.value.trim();
+        if (!response) { document.getElementById('error').textContent = 'Please enter an answer first.'; input.focus(); return; }
+        showTimelineQuestion(response);
+      });
+    }
+    function showTimelineQuestion(verbResponse = null) {
+      const q = activeQuestions[index];
+      const order = shuffle(q.timeline.events.map((_, i) => i));
+      let selected = null;
+      const placed = {};
+      const slots = ['earlier','during','later','ongoing'];
+      const slotNames = {ongoing:'Ongoing action',during:'Moment during it',earlier:'Earlier',later:'Later'};
+      app.innerHTML = `${progressHTML()}<p class="eyebrow">${verbResponse === null ? 'Place the events' : 'Combinations · step 2 of 2'}</p><h2>What happened when?</h2><p class="sentence">${sentenceHTML(q,verbResponse === null ? q.answer : verbResponse)}</p><p class="muted small">Select an event, then select its spot on the timeline. Select it again to move it.${verbResponse === null ? '' : ' You’ll see both answers after this step.'}</p><div id="placement-panel"></div><p class="error" id="error" role="alert"></p><button type="button" id="check-timeline">Check timeline →</button>`;
+      function renderPanel(focusId) {
+        const events = order.map(i => {
+          const slot = Object.keys(placed).find(key => placed[key] === i);
+          return `<button type="button" class="event-choice ${selected === i ? 'selected' : ''} ${slot ? 'assigned' : ''}" data-event="${i}" aria-pressed="${selected === i}" aria-label="${escapeHTML(q.timeline.events[i].label)}${slot ? `, placed at ${slotNames[slot]}` : ''}">${escapeHTML(q.timeline.events[i].label)}</button>`;
+        }).join('');
+        const target = slot => `<button type="button" class="place-slot ${placed[slot] !== undefined ? 'filled' : ''} ${slot === 'ongoing' ? 'bracket-slot' : ''}" data-slot="${slot}" aria-label="${slotNames[slot]}: ${placed[slot] === undefined ? 'empty' : q.timeline.events[placed[slot]].label}"><small>${slotNames[slot]}</small>${placed[slot] === undefined ? 'Place event here' : escapeHTML(q.timeline.events[placed[slot]].label)}</button>`;
+        document.getElementById('placement-panel').innerHTML = `<label>Events to place</label><div class="event-choices">${events}</div><div class="place-board">${target('ongoing')}<div class="place-row">${target('earlier')}${target('during')}${target('later')}</div><div class="board-direction"><span>← Earlier</span><span>Later →</span></div></div>`;
+        document.querySelectorAll('[data-event]').forEach(button => button.addEventListener('click', () => {
+          selected = Number(button.dataset.event);
+          renderPanel(`event-${selected}`);
+        }));
+        document.querySelectorAll('[data-slot]').forEach(button => button.addEventListener('click', () => {
+          const slot = button.dataset.slot;
+          if (selected === null || !slots.includes(slot)) {
+            document.getElementById('error').textContent = 'Select an event first, then choose its spot.';
+            return;
+          }
+          for (const key of slots) if (placed[key] === selected) delete placed[key];
+          placed[slot] = selected;
+          selected = null;
+          document.getElementById('error').textContent = '';
+          renderPanel(`slot-${slot}`);
+        }));
+        if (focusId) {
+          const selector = focusId.startsWith('event-') ? `[data-event="${focusId.slice(6)}"]` : `[data-slot="${focusId.slice(5)}"]`;
+          document.querySelector(selector)?.focus();
+        }
+      }
+      renderPanel();
+      document.getElementById('check-timeline').addEventListener('click', () => {
+        if (Object.keys(placed).length !== q.timeline.events.length) {
+          document.getElementById('error').textContent = 'Place both events before checking.';
+          return;
+        }
+        const correct = Object.entries(placed).every(([slot, eventIndex]) => eventSlot(q.timeline.events[eventIndex]) === slot);
+        if (verbResponse !== null) {
+          const verbCorrect = normalize(verbResponse) === normalize(q.answer);
+          if (verbCorrect) combinationVerbScore++;
+          if (correct) combinationTimelineScore++;
+          if (verbCorrect && correct) score++;
+          showCombinationExplanation(q, verbResponse, verbCorrect, placed, correct, slotNames, slots);
+        } else {
+          if (correct) score++;
+          showTimelineExplanation(q, placed, correct, slotNames, slots);
+        }
+      });
+    }
+    function showTimelineExplanation(q, placed, correct, slotNames, slots) {
+      const yourAnswer = slots.filter(slot => placed[slot] !== undefined).map(slot => `${slotNames[slot]}: ${q.timeline.events[placed[slot]].label}`).join(' · ');
+      app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s the timeline.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${correct ? '' : `<div class="answer-box"><span>Your placement</span><p>${escapeHTML(yourAnswer)}</p></div>`}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
+      document.getElementById('next').addEventListener('click', advance);
+    }
+    function showCombinationExplanation(q, response, verbCorrect, placed, timelineCorrect, slotNames, slots) {
+      const placements = slots.filter(slot => placed[slot] !== undefined).map(slot => `${slotNames[slot]}: ${q.timeline.events[placed[slot]].label}`).join(' · ');
+      app.innerHTML = `${progressHTML()}<span class="result ${verbCorrect && timelineCorrect ? 'right' : 'wrong'}">${verbCorrect && timelineCorrect ? '✓ Both correct' : 'Keep practising'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s how both fit.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p><div class="answer-box"><span>Verb · ${verbCorrect ? 'correct' : 'not quite'}</span><strong>${escapeHTML(q.answer)}</strong>${verbCorrect ? '' : `<p>You wrote: ${escapeHTML(response)}</p>`}</div><p class="explanation">${escapeHTML(q.explanation)}</p><div class="answer-box"><span>Timeline · ${timelineCorrect ? 'correct' : 'not quite'}</span><p>${timelineCorrect ? 'You placed both events correctly.' : `You placed: ${escapeHTML(placements)}`}</p></div>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
+      document.getElementById('next').addEventListener('click', advance);
+    }
+    function showSpotQuestion() {
+      const {q, wrong} = activeQuestions[index];
+      const [before] = sentenceParts(q);
+      const sentence = fullSentence(q, wrong || q.answer);
+      const wrongStart = before.length, wrongEnd = wrongStart + (wrong || q.answer).length;
+      let position = 0, selected = null;
+      const tokens = (sentence.match(/\S+|\s+/g) || []).map(part => {
+        const start = position;
+        position += part.length;
+        return {part, isMistake:!!wrong && start < wrongEnd && position > wrongStart};
+      });
+      const words = tokens.map((token, i) => /^\s+$/.test(token.part) ? escapeHTML(token.part) : `<button type="button" class="spot-token" data-word="${i}" aria-pressed="false" aria-label="Select word: ${escapeHTML(token.part)}">${escapeHTML(token.part)}</button>`).join('');
+      app.innerHTML = `${progressHTML()}<p class="eyebrow">Spot the mistake</p><h2>Is the tense right?</h2><p class="muted small">Tap a word with the wrong tense, or choose “No mistake”. Some sentences are correct.</p><div class="spot-sentence" id="spot-sentence">${words}</div><div class="actions"><button type="button" class="no-mistake" id="no-mistake" aria-pressed="false">No mistake</button><button type="button" id="check-spot">Check answer →</button></div><p class="error" id="error" role="alert"></p>`;
+      const wordButtons = [...document.querySelectorAll('[data-word]')];
+      const noMistake = document.getElementById('no-mistake');
+      function select(value) {
+        selected = value;
+        for (const button of wordButtons) {
+          const active = selected === Number(button.dataset.word);
+          button.classList.toggle('selected', active);
+          button.setAttribute('aria-pressed', String(active));
+        }
+        const noError = selected === 'none';
+        noMistake.classList.toggle('selected', noError);
+        noMistake.setAttribute('aria-pressed', String(noError));
+        document.getElementById('error').textContent = '';
+      }
+      wordButtons.forEach(button => button.addEventListener('click', () => select(Number(button.dataset.word))));
+      noMistake.addEventListener('click', () => select('none'));
+      document.getElementById('check-spot').addEventListener('click', () => {
+        if (selected === null) {
+          document.getElementById('error').textContent = 'Tap a word or choose “No mistake” first.';
+          return;
+        }
+        const correct = wrong ? typeof selected === 'number' && tokens[selected].isMistake : selected === 'none';
+        if (correct) score++;
+        const choice = selected === 'none' ? 'No mistake' : tokens[selected].part;
+        showSpotExplanation(q, wrong, choice, correct);
+      });
+    }
+    function showSpotExplanation(q, wrong, choice, correct) {
+      const answerText = wrong ? `“${wrong}” uses the wrong tense. Replace it with “${q.answer}”.` : 'No mistake — the sentence is correct.';
+      app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>${wrong ? 'Here is the correction.' : 'This one was correct.'}</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p><div class="answer-box"><span>${wrong ? 'Mistake and correction' : 'Correct answer'}</span><p>${escapeHTML(answerText)}</p>${correct ? '' : `<p>You chose: ${escapeHTML(choice)}</p>`}</div><p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
+      document.getElementById('next').addEventListener('click', advance);
+    }
+    function showResults() {
+      app.innerHTML = `<p class="eyebrow">Quiz complete</p><h1>Nicely done.</h1><p class="sentence">${score} out of ${activeQuestions.length} correct</p>${mode === 'combination' ? `<p class="muted">Verbs: ${combinationVerbScore}/${activeQuestions.length} · Timelines: ${combinationTimelineScore}/${activeQuestions.length}<br>Both parts must be correct for a question to count.</p>` : ''}<p class="muted">The important part is noticing when an action finished, happened earlier, or was still in progress. Try again to practise each one.</p><button type="button" id="restart">Try again ↺</button>`;
+      document.getElementById('restart').addEventListener('click', () => startQuiz(mode));
+      const change = document.createElement('button');
+      change.type = 'button';
+      change.className = 'secondary';
+      change.textContent = 'Choose another mode';
+      change.style.marginLeft = '10px';
+      change.addEventListener('click', showIntro);
+      app.appendChild(change);
+    }
+    showIntro();
+  </script>
+</body>
+</html>
