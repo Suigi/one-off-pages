@@ -33,6 +33,12 @@
     .answer-box span { display:block; font-size:.78rem; font-weight:800; text-transform:uppercase; letter-spacing:.1em; color:var(--green); margin-bottom:5px; }
     .answer-box strong { font-family:Georgia,serif; font-size:1.45rem; font-weight:500; }
     .answer-box p { margin:6px 0 0; font-size:.88rem; color:var(--muted); }
+    .comparison { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:22px 0 25px; } .comparison.single { grid-template-columns:1fr; }
+    .compare-card { border:2px solid #cbded0; border-radius:14px; padding:17px 18px; background:#f0f6ef; min-width:0; }
+    .compare-card.incorrect { border-color:#e6b1a4; background:#fff0eb; }
+    .compare-card span { display:block; font-size:.77rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--green); margin-bottom:7px; }
+    .compare-card.incorrect span,.compare-card.incorrect strong { color:#8c4335; }
+    .compare-card strong { display:block; font-size:1.12rem; line-height:1.45; font-weight:700; color:var(--ink); overflow-wrap:anywhere; white-space:pre-line; }
     .explanation { margin:0 0 25px; } .explanation strong { color:var(--green); }
     .timeline { border:1px solid var(--line); border-radius:15px; padding:16px 14px 8px; margin:24px 0 28px; background:#fafcf8; }
     .timeline-title { font-size:.78rem; text-transform:uppercase; letter-spacing:.1em; font-weight:800; color:var(--green); margin:0 0 4px; }
@@ -71,7 +77,7 @@
     @media(max-width:500px) {
       .shell { width:calc(100% - 20px); padding:16px 0 28px; }
       header { margin-bottom:14px; } .tag { font-size:.69rem; padding:5px 8px; }
-      .card { padding:23px 18px; border-radius:18px; } .mode-list { grid-template-columns:1fr; }
+      .card { padding:23px 18px; border-radius:18px; } .mode-list,.comparison { grid-template-columns:1fr; }
       .mode-card { min-height:76px; } .place-board { padding:14px 8px 20px; }
       .place-slot { font-size:.72rem; height:112px; padding:7px 3px; } .bracket-slot { height:78px; }
       .event-choice { min-height:48px; } .spot-sentence { line-height:2.1; } .actions button { flex:1 1 100%; }
@@ -177,6 +183,15 @@
       const ending = answer ? sentenceParts(q)[1] : after;
       return `${escapeHTML(before)}<span class="blank">${answer ? escapeHTML(answer) : '_______'}</span>${escapeHTML(ending)}`;
     };
+    function comparisonHTML(yourLabel, yourValue, correctLabel, correctValue, correct) {
+      return `<div class="comparison ${correct ? 'single' : ''}">${correct ? '' : `<div class="compare-card incorrect"><span>${escapeHTML(yourLabel)}</span><strong>${escapeHTML(yourValue)}</strong></div>`}<div class="compare-card"><span>${escapeHTML(correctLabel)}</span><strong>${escapeHTML(correctValue)}</strong></div></div>`;
+    }
+    function placementSummary(q, placed, slots, slotNames) {
+      return slots.filter(slot => placed[slot] !== undefined).map(slot => `${slotNames[slot]}: ${q.timeline.events[placed[slot]].label}`).join('\n');
+    }
+    function correctPlacementSummary(q, slots, slotNames) {
+      return slots.filter(slot => q.timeline.events.some(event => eventSlot(event) === slot)).map(slot => `${slotNames[slot]}: ${q.timeline.events.find(event => eventSlot(event) === slot).label}`).join('\n');
+    }
     function timelineHTML(t) {
       if (!t) return '';
       const shapes = t.events.map(e => e.kind === 'duration'
@@ -218,7 +233,7 @@
     }
     function showExplanation(response, correct) {
       const q = activeQuestions[index];
-      app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s why it works.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p><div class="answer-box"><span>Correct answer</span><strong>${escapeHTML(q.answer)}</strong>${correct?'':`<p>You wrote: ${escapeHTML(response)}</p>`}</div><p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
+      app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s why it works.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${comparisonHTML('Your verb',response,'Correct verb',q.answer,correct)}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
       document.getElementById('next').addEventListener('click', advance);
     }
     function advance() {
@@ -296,13 +311,15 @@
       });
     }
     function showTimelineExplanation(q, placed, correct, slotNames, slots) {
-      const yourAnswer = slots.filter(slot => placed[slot] !== undefined).map(slot => `${slotNames[slot]}: ${q.timeline.events[placed[slot]].label}`).join(' · ');
-      app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s the timeline.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${correct ? '' : `<div class="answer-box"><span>Your placement</span><p>${escapeHTML(yourAnswer)}</p></div>`}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
+      const yourAnswer = placementSummary(q, placed, slots, slotNames);
+      const expected = correctPlacementSummary(q, slots, slotNames);
+      app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s the timeline.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${comparisonHTML('Your timeline',yourAnswer,'Correct timeline',expected,correct)}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
       document.getElementById('next').addEventListener('click', advance);
     }
     function showCombinationExplanation(q, response, verbCorrect, placed, timelineCorrect, slotNames, slots) {
-      const placements = slots.filter(slot => placed[slot] !== undefined).map(slot => `${slotNames[slot]}: ${q.timeline.events[placed[slot]].label}`).join(' · ');
-      app.innerHTML = `${progressHTML()}<span class="result ${verbCorrect && timelineCorrect ? 'right' : 'wrong'}">${verbCorrect && timelineCorrect ? '✓ Both correct' : 'Keep practising'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s how both fit.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p><div class="answer-box"><span>Verb · ${verbCorrect ? 'correct' : 'not quite'}</span><strong>${escapeHTML(q.answer)}</strong>${verbCorrect ? '' : `<p>You wrote: ${escapeHTML(response)}</p>`}</div><p class="explanation">${escapeHTML(q.explanation)}</p><div class="answer-box"><span>Timeline · ${timelineCorrect ? 'correct' : 'not quite'}</span><p>${timelineCorrect ? 'You placed both events correctly.' : `You placed: ${escapeHTML(placements)}`}</p></div>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
+      const yourTimeline = placementSummary(q, placed, slots, slotNames);
+      const correctTimeline = correctPlacementSummary(q, slots, slotNames);
+      app.innerHTML = `${progressHTML()}<span class="result ${verbCorrect && timelineCorrect ? 'right' : 'wrong'}">${verbCorrect && timelineCorrect ? '✓ Both correct' : 'Keep practising'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s how both fit.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${comparisonHTML('Your verb',response,'Correct verb',q.answer,verbCorrect)}<p class="explanation">${escapeHTML(q.explanation)}</p>${comparisonHTML('Your timeline',yourTimeline,'Correct timeline',correctTimeline,timelineCorrect)}${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
       document.getElementById('next').addEventListener('click', advance);
     }
     function showSpotQuestion() {
@@ -346,8 +363,8 @@
       });
     }
     function showSpotExplanation(q, wrong, choice, correct) {
-      const answerText = wrong ? `“${wrong}” uses the wrong tense. Replace it with “${q.answer}”.` : 'No mistake — the sentence is correct.';
-      app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>${wrong ? 'Here is the correction.' : 'This one was correct.'}</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p><div class="answer-box"><span>${wrong ? 'Mistake and correction' : 'Correct answer'}</span><p>${escapeHTML(answerText)}</p>${correct ? '' : `<p>You chose: ${escapeHTML(choice)}</p>`}</div><p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
+      const expected = wrong ? `Wrong tense: ${wrong}\nUse instead: ${q.answer}` : 'No mistake';
+      app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>${wrong ? 'Here is the correction.' : 'This one was correct.'}</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${comparisonHTML('You selected',choice,'Correct finding',expected,correct)}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
       document.getElementById('next').addEventListener('click', advance);
     }
     function showResults() {
