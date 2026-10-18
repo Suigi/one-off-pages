@@ -69,17 +69,19 @@
     .place-board { background:#fafcf8; border:1px solid var(--line); border-radius:15px; padding:18px 14px 24px; margin-bottom:8px; }
     .place-row { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:end; gap:7px; position:relative; }
     .place-row::before { content:""; position:absolute; top:50%; left:8%; right:8%; height:2px; background:#94ad9b; pointer-events:none; }
-    .place-slot { position:relative; z-index:1; background:#fff; color:var(--ink); border:2px dashed #9bb9a2; border-radius:11px; padding:8px 5px; width:100%; height:100px; line-height:1.25; font-size:.82rem; overflow-wrap:anywhere; overflow:auto; }
+    .place-slot { position:relative; z-index:1; background:#fff; color:var(--ink); border:2px dashed #9bb9a2; border-radius:11px; padding:0; width:100%; height:100px; line-height:1.25; font-size:.82rem; overflow-wrap:anywhere; text-align:center; }
     .place-slot:hover { color:var(--ink); border-color:var(--green); background:#eef6ef; }
     .place-slot.filled { border-style:solid; border-color:var(--green); background:#d4e9d9; color:var(--ink); }
     .place-slot.filled:hover { background:#c9e3d1; color:var(--ink); }
-    .place-slot small { display:block; font-size:.72rem; font-weight:500; margin-bottom:3px; }
+    .place-slot small { position:absolute; top:8px; left:3px; right:3px; display:block; font-size:.72rem; font-weight:500; }
     .place-slot.filled small { color:var(--green); font-weight:800; }
+    .slot-value { position:absolute; top:38px; bottom:3px; left:3px; right:3px; display:flex; align-items:center; justify-content:center; overflow:auto; }
+    .bracket-slot .slot-value { top:28px; }
     .bracket-slot { display:block; width:84%; height:78px; margin:0 auto 22px; border:3px dashed #b76a36; border-bottom:0; border-radius:10px 10px 0 0; background:#fff; color:var(--ink); }
     .bracket-slot:hover { border-color:#b76a36; background:#fff; color:var(--ink); }
     .bracket-slot.filled { border-style:dashed; border-color:#b76a36; border-bottom:0; background:#d4e9d9; color:var(--ink); }
     .bracket-slot.filled:hover { border-color:#b76a36; background:#c9e3d1; color:var(--ink); }
-    .bracket-slot small { margin:0; } .board-direction { display:flex; justify-content:space-between; color:var(--muted); font-size:.73rem; margin-top:8px; }
+    .board-direction { display:flex; justify-content:space-between; color:var(--muted); font-size:.73rem; margin-top:8px; }
     .attempt-heading { font-size:.78rem; text-transform:uppercase; letter-spacing:.1em; font-weight:800; color:var(--red); margin:24px 0 9px; }
     .attempt-slot { min-width:0; min-height:91px; padding:9px 6px; border:2px solid #cbded0; border-radius:11px; background:#fff; text-align:center; overflow-wrap:anywhere; font-size:.82rem; line-height:1.25; }
     .attempt-slot small { display:block; color:var(--muted); font-size:.72rem; margin-bottom:8px; }
@@ -103,7 +105,7 @@
       header { margin-bottom:14px; } .tag { display:none; } .nav-button { min-height:44px; }
       .card { padding:23px 18px; border-radius:18px; } .mode-list,.comparison { grid-template-columns:1fr; }
       .mode-card { min-height:76px; } .place-board { padding:14px 8px 20px; }
-      .place-slot { font-size:.72rem; height:112px; padding:7px 3px; } .bracket-slot { height:78px; }
+      .place-slot { font-size:.72rem; height:112px; } .bracket-slot { height:78px; }
       .attempt-slot { font-size:.73rem; min-height:107px; padding:7px 3px; } .attempt-bracket { min-height:80px; }
       .event-choice { min-height:48px; } .spot-sentence { line-height:2.1; } .actions button { flex:1 1 100%; }
     }
@@ -421,7 +423,7 @@
           const slot = Object.keys(placed).find(key => placed[key] === i);
           return `<button type="button" class="event-choice ${selected === i ? 'selected' : ''} ${slot ? 'assigned' : ''}" data-event="${i}" aria-pressed="${selected === i}" aria-label="${escapeHTML(q.timeline.events[i].label)}${slot ? `, placed at ${slotNames[slot]}` : ''}">${escapeHTML(q.timeline.events[i].label)}</button>`;
         }).join('');
-        const target = slot => `<button type="button" class="place-slot ${placed[slot] !== undefined ? 'filled' : ''} ${slot === 'ongoing' ? 'bracket-slot' : ''}" data-slot="${slot}" aria-label="${slotNames[slot]}: ${placed[slot] === undefined ? 'empty' : q.timeline.events[placed[slot]].label}"><small>${slotNames[slot]}</small>${placed[slot] === undefined ? 'Place event here' : escapeHTML(q.timeline.events[placed[slot]].label)}</button>`;
+        const target = slot => `<button type="button" class="place-slot ${placed[slot] !== undefined ? 'filled' : ''} ${slot === 'ongoing' ? 'bracket-slot' : ''}" data-slot="${slot}" aria-label="${slotNames[slot]}: ${placed[slot] === undefined ? 'empty' : q.timeline.events[placed[slot]].label}"><small>${slotNames[slot]}</small><span class="slot-value">${placed[slot] === undefined ? 'Place event here' : escapeHTML(q.timeline.events[placed[slot]].label)}</span></button>`;
         document.getElementById('placement-panel').innerHTML = `<label>Events to place</label><div class="event-choices">${events}</div><div class="place-board">${target('ongoing')}<div class="place-row">${target('earlier')}${target('during')}${target('later')}</div><div class="board-direction"><span>← Earlier</span><span>Later →</span></div></div>`;
         document.querySelectorAll('[data-event]').forEach(button => button.addEventListener('click', () => {
           selected = Number(button.dataset.event);
