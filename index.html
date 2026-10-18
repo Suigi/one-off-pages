@@ -73,6 +73,7 @@
     .attempt-slot strong { display:block; font-weight:750; } .attempt-slot.empty { border-style:dashed; color:var(--muted); }
     .attempt-slot.incorrect { border-color:var(--red); background:#fff0eb; color:var(--red); }
     .attempt-slot.incorrect strong { text-decoration:line-through; text-decoration-thickness:2px; }
+    .attempt-dot { display:block; width:12px; height:12px; margin:0 auto 5px; border-radius:50%; background:var(--red); }
     .attempt-slot.correct { color:var(--green); }
     .attempt-bracket { width:84%; min-height:70px; margin:0 auto 19px; border:3px dashed #b76a36; border-bottom:0; border-radius:10px 10px 0 0; }
     .attempt-bracket.incorrect { border-color:var(--red); }
@@ -201,7 +202,7 @@
       const target = slot => {
         const event = placed[slot] === undefined ? null : q.timeline.events[placed[slot]];
         const state = !event ? 'empty' : eventSlot(event) === slot ? 'correct' : 'incorrect';
-        return `<div class="attempt-slot ${slot === 'ongoing' ? 'attempt-bracket' : ''} ${state}"><small>${escapeHTML(slotNames[slot])}</small><strong>${event ? escapeHTML(event.label) : '—'}</strong></div>`;
+        return `<div class="attempt-slot ${slot === 'ongoing' ? 'attempt-bracket' : ''} ${state}"><small>${escapeHTML(slotNames[slot])}</small>${state === 'incorrect' && slot !== 'ongoing' ? '<span class="attempt-dot" aria-hidden="true"></span>' : ''}<strong>${event ? escapeHTML(event.label) : '—'}</strong></div>`;
       };
       const description = slots.filter(slot => placed[slot] !== undefined).map(slot => `${slotNames[slot]}: ${q.timeline.events[placed[slot]].label}${eventSlot(q.timeline.events[placed[slot]]) === slot ? ', correct' : ', incorrect'}`).join('; ');
       return `<div class="attempt-heading">Your timeline · red events were misplaced</div><div class="place-board" role="img" aria-label="Your timeline: ${escapeHTML(description)}"><div aria-hidden="true">${target('ongoing')}<div class="place-row">${target('earlier')}${target('during')}${target('later')}</div><div class="board-direction"><span>← Earlier</span><span>Later →</span></div></div></div>`;
