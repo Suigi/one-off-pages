@@ -67,6 +67,15 @@
     .bracket-slot { display:block; width:84%; height:78px; margin:0 auto 22px; border:3px dashed #b76a36; border-bottom:0; border-radius:10px 10px 0 0; background:#fff; color:var(--ink); }
     .bracket-slot.filled,.bracket-slot:hover,.bracket-slot.filled:hover { border-style:dashed; border-color:#b76a36; border-bottom:0; background:#fff; color:var(--ink); }
     .bracket-slot small { margin:0; } .board-direction { display:flex; justify-content:space-between; color:var(--muted); font-size:.73rem; margin-top:8px; }
+    .attempt-heading { font-size:.78rem; text-transform:uppercase; letter-spacing:.1em; font-weight:800; color:var(--red); margin:24px 0 9px; }
+    .attempt-slot { min-width:0; min-height:91px; padding:9px 6px; border:2px solid #cbded0; border-radius:11px; background:#fff; text-align:center; overflow-wrap:anywhere; font-size:.82rem; line-height:1.25; }
+    .attempt-slot small { display:block; color:var(--muted); font-size:.72rem; margin-bottom:8px; }
+    .attempt-slot strong { display:block; font-weight:750; } .attempt-slot.empty { border-style:dashed; color:var(--muted); }
+    .attempt-slot.incorrect { border-color:var(--red); background:#fff0eb; color:var(--red); }
+    .attempt-slot.incorrect strong { text-decoration:line-through; text-decoration-thickness:2px; }
+    .attempt-slot.correct { color:var(--green); }
+    .attempt-bracket { width:84%; min-height:70px; margin:0 auto 19px; border:3px dashed #b76a36; border-bottom:0; border-radius:10px 10px 0 0; }
+    .attempt-bracket.incorrect { border-color:var(--red); }
     .spot-sentence { font-family:Georgia,serif; font-size:clamp(1.35rem,5vw,2rem); line-height:1.9; margin:16px 0 25px; }
     .spot-token { display:inline; min-height:42px; padding:3px 3px; margin:0 -3px; background:transparent; color:var(--ink); border-radius:5px; font:inherit; font-weight:400; line-height:inherit; }
     .spot-token:hover,.spot-token.selected { background:#f5dabc; color:var(--ink); transform:none; } .spot-token.selected { box-shadow:inset 0 -3px #ab602c; }
@@ -81,6 +90,7 @@
       .card { padding:23px 18px; border-radius:18px; } .mode-list,.comparison { grid-template-columns:1fr; }
       .mode-card { min-height:76px; } .place-board { padding:14px 8px 20px; }
       .place-slot { font-size:.72rem; height:112px; padding:7px 3px; } .bracket-slot { height:78px; }
+      .attempt-slot { font-size:.73rem; min-height:107px; padding:7px 3px; } .attempt-bracket { min-height:80px; }
       .event-choice { min-height:48px; } .spot-sentence { line-height:2.1; } .actions button { flex:1 1 100%; }
     }
   </style>
@@ -187,11 +197,14 @@
     function comparisonHTML(yourLabel, yourValue, correctLabel, correctValue, correct) {
       return `<div class="comparison ${correct ? 'single' : ''}">${correct ? '' : `<div class="compare-card incorrect"><span>${escapeHTML(yourLabel)}</span><strong>${escapeHTML(yourValue)}</strong></div>`}<div class="compare-card"><span>${escapeHTML(correctLabel)}</span><strong>${escapeHTML(correctValue)}</strong></div></div>`;
     }
-    function placementSummary(q, placed, slots, slotNames) {
-      return slots.filter(slot => placed[slot] !== undefined).map(slot => `${slotNames[slot]}: ${q.timeline.events[placed[slot]].label}`).join('\n');
-    }
-    function correctPlacementSummary(q, slots, slotNames) {
-      return slots.filter(slot => q.timeline.events.some(event => eventSlot(event) === slot)).map(slot => `${slotNames[slot]}: ${q.timeline.events.find(event => eventSlot(event) === slot).label}`).join('\n');
+    function attemptTimelineHTML(q, placed, slots, slotNames) {
+      const target = slot => {
+        const event = placed[slot] === undefined ? null : q.timeline.events[placed[slot]];
+        const state = !event ? 'empty' : eventSlot(event) === slot ? 'correct' : 'incorrect';
+        return `<div class="attempt-slot ${slot === 'ongoing' ? 'attempt-bracket' : ''} ${state}"><small>${escapeHTML(slotNames[slot])}</small><strong>${event ? escapeHTML(event.label) : '—'}</strong></div>`;
+      };
+      const description = slots.filter(slot => placed[slot] !== undefined).map(slot => `${slotNames[slot]}: ${q.timeline.events[placed[slot]].label}${eventSlot(q.timeline.events[placed[slot]]) === slot ? ', correct' : ', incorrect'}`).join('; ');
+      return `<div class="attempt-heading">Your timeline · red events were misplaced</div><div class="place-board" role="img" aria-label="Your timeline: ${escapeHTML(description)}"><div aria-hidden="true">${target('ongoing')}<div class="place-row">${target('earlier')}${target('during')}${target('later')}</div><div class="board-direction"><span>← Earlier</span><span>Later →</span></div></div></div>`;
     }
     function timelineHTML(t) {
       if (!t) return '';
@@ -203,7 +216,7 @@
       const mobile = duration
         ? `<div class="mobile-bracket ${duration.end <= t.events.find(e => e.kind === 'point').x ? 'ends-at-point' : ''}">${escapeHTML(duration.label)}</div><div class="mobile-during">${escapeHTML(t.events.find(e => e.kind === 'point').label)}</div>`
         : `<div class="mobile-sequence">${[...t.events].sort((a,b) => a.x-b.x).map(e => `<div class="mobile-event">${escapeHTML(e.label)}</div>`).join('')}</div>`;
-      return `<div class="timeline"><div class="timeline-title">Past events · timeline</div><svg viewBox="0 0 660 140" role="img" aria-label="Timeline, earlier to later: ${escapeHTML(caption)}"><line class="axis" x1="48" y1="92" x2="610" y2="92"/><path class="axis" d="M 601 86 L 610 92 L 601 98" fill="none"/>${shapes}<text x="48" y="136">earlier</text><text x="610" y="136" text-anchor="end">later</text></svg><div class="timeline-mobile" role="img" aria-label="Timeline, earlier to later: ${escapeHTML(caption)}">${mobile}</div><p class="note">Brackets show actions in progress; dots mark moments or completed events.</p></div>`;
+      return `<div class="timeline"><div class="timeline-title">Correct timeline</div><svg viewBox="0 0 660 140" role="img" aria-label="Timeline, earlier to later: ${escapeHTML(caption)}"><line class="axis" x1="48" y1="92" x2="610" y2="92"/><path class="axis" d="M 601 86 L 610 92 L 601 98" fill="none"/>${shapes}<text x="48" y="136">earlier</text><text x="610" y="136" text-anchor="end">later</text></svg><div class="timeline-mobile" role="img" aria-label="Timeline, earlier to later: ${escapeHTML(caption)}">${mobile}</div><p class="note">Brackets show actions in progress; dots mark moments or completed events.</p></div>`;
     }
     function progressHTML() {
       return `<div class="progress-top"><span>Question ${index+1} of ${activeQuestions.length}</span><span>${score} correct so far</span></div><div class="progress" role="progressbar" aria-label="Quiz progress" aria-valuemin="0" aria-valuemax="${activeQuestions.length}" aria-valuenow="${index}"><span style="width:${index/activeQuestions.length*100}%"></span></div>`;
@@ -312,15 +325,11 @@
       });
     }
     function showTimelineExplanation(q, placed, correct, slotNames, slots) {
-      const yourAnswer = placementSummary(q, placed, slots, slotNames);
-      const expected = correctPlacementSummary(q, slots, slotNames);
-      app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s the timeline.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${comparisonHTML('Your timeline',yourAnswer,'Correct timeline',expected,correct)}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
+      app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s the timeline.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${correct ? '' : attemptTimelineHTML(q,placed,slots,slotNames)}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
       document.getElementById('next').addEventListener('click', advance);
     }
     function showCombinationExplanation(q, response, verbCorrect, placed, timelineCorrect, slotNames, slots) {
-      const yourTimeline = placementSummary(q, placed, slots, slotNames);
-      const correctTimeline = correctPlacementSummary(q, slots, slotNames);
-      app.innerHTML = `${progressHTML()}<span class="result ${verbCorrect && timelineCorrect ? 'right' : 'wrong'}">${verbCorrect && timelineCorrect ? '✓ Both correct' : 'Keep practising'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s how both fit.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${comparisonHTML('Your verb',response,'Correct verb',q.answer,verbCorrect)}<p class="explanation">${escapeHTML(q.explanation)}</p>${comparisonHTML('Your timeline',yourTimeline,'Correct timeline',correctTimeline,timelineCorrect)}${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
+      app.innerHTML = `${progressHTML()}<span class="result ${verbCorrect && timelineCorrect ? 'right' : 'wrong'}">${verbCorrect && timelineCorrect ? '✓ Both correct' : 'Keep practising'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s how both fit.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${comparisonHTML('Your verb',response,'Correct verb',q.answer,verbCorrect)}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineCorrect ? '' : attemptTimelineHTML(q,placed,slots,slotNames)}${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
       document.getElementById('next').addEventListener('click', advance);
     }
     function showSpotQuestion() {
