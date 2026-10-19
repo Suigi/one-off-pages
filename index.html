@@ -201,7 +201,7 @@
     const spotItem = (sentence, answer, tense, explanation, wrong, timeline) => ({q:{sentence,answer,tense,explanation,timeline},wrong});
     const spotExtras = [
       spotItem('Yesterday, Leo _______ (buy) a new coat.','bought','Past simple','“Yesterday” is a finished time; the past form of “buy” is “bought”.','buys'),
-      spotItem('Last Monday, Ada _______ (send) the invitation.','sent','Past simple','“Last Monday” requires a past form here: “sent”, not present-simple “sends”.','sends'),
+      spotItem('Last Monday, Ada _______ (send) the invitation.','sent','Past simple','“Last Monday” is a finished past time. Use “sent”, not a present-perfect form.','sends'),
       spotItem('Two hours ago, Mina _______ (choose) the blue bag.','chose','Past simple','“Two hours ago” is a completed past time. The past form of “choose” is “chose”.','chooses'),
       spotItem('In 2018, we _______ (build) a treehouse.','built','Past simple','“In 2018” names a finished past year. Use “built”, the past form of “build”.','build'),
       spotItem('After the clock struck twelve, the guard _______ (open) the gate.','opened','Past simple','The clock struck first; the guard opened the gate afterward. Both are past events.','opens',sequence('Clock struck twelve','Gate opened')),
@@ -231,8 +231,23 @@
       spotItem('When we entered the room, the meeting _______ (begin).','had already begun','Past perfect','The meeting began before we entered. “Had already begun” correctly marks that earlier event.',null,sequence('Meeting began','We entered')),
       spotItem('While the children _______ (build) a fort, it started to rain.','were building','Past progressive','Building the fort was in progress when the rain started. “Were building” is correct.',null,overlap('Children were building','Rain started'))
     ];
-    // Keep the existing 27 spot items; the 30 new spot items are curated separately.
-    const mistakeBank = [...questions.slice(0, 36).filter(q => q.timeline).map(q => ({q, wrong:wrongForms[q.answer] || null})), ...spotExtras];
+    // Keep legacy keys so saved spot-quiz progress survives revisions to the displayed sentences.
+    const clearlyWrongForms = {
+      'are leaving':'have left', 'is appearing':'has appeared', 'are stopping':'have stopped',
+      'buys':'has bought', 'sends':'has sent', 'chooses':'has chosen', 'build':'have built',
+      'opens':'has opened', 'forget':'have forgotten', 'cheers':'has cheered', 'grow':'have grown'
+    };
+    const finishedTime = /\b(yesterday|last (?:night|monday|friday|year|saturday|winter|summer|spring)|ago|in 2018|the day before)\b/i;
+    function clarifySpot(item) {
+      if (!item.wrong) return item;
+      const oldKey = item.q.sentence + '|' + item.wrong;
+      const start = item.q.sentence[0];
+      const anchored = finishedTime.test(item.q.sentence) ? item.q.sentence
+        : 'Yesterday, ' + (start === 'I' || start === 'T' && item.q.sentence.startsWith('Tom ') ? start : start.toLowerCase()) + item.q.sentence.slice(1);
+      return {...item,id:oldKey,wrong:clearlyWrongForms[item.wrong] || item.wrong,q:{...item.q,sentence:anchored}};
+    }
+    // Keep the original 27 spot items and add the 30 curated spot items.
+    const mistakeBank = [...questions.slice(0, 36).filter(q => q.timeline).map(q => ({q, wrong:wrongForms[q.answer] || null})), ...spotExtras].map(clarifySpot);
     const app = document.getElementById('app');
     const quizLength = 20;
     const storageKey = 'grammar-quiz-runs-v1';
@@ -263,7 +278,7 @@
       return result;
     }
     const bankForMode = selectedMode => selectedMode === 'spot' ? mistakeBank : selectedMode === 'verbs' ? questions : questions.filter(q => q.timeline);
-    const questionKey = (selectedMode, item) => selectedMode + ':' + (selectedMode === 'spot' ? item.q.sentence + '|' + (item.wrong || 'no-mistake') : item.sentence);
+    const questionKey = (selectedMode, item) => selectedMode + ':' + (selectedMode === 'spot' ? (item.id || item.q.sentence + '|' + (item.wrong || 'no-mistake')) : item.sentence);
     function favoredSample(items, count, selectedMode) {
       const latest = new Map();
       for (const run of runs) for (const entry of run.entries) latest.set(entry.key, entry.status);
