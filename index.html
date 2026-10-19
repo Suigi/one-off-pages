@@ -48,6 +48,7 @@
     .compare-card.incorrect span,.compare-card.incorrect strong { color:#8c4335; }
     .compare-card strong { display:block; font-size:1.12rem; line-height:1.45; font-weight:700; color:var(--ink); overflow-wrap:anywhere; white-space:pre-line; }
     .explanation { margin:0 0 25px; } .explanation strong { color:var(--green); }
+    .alternate-note { border-left:4px solid #b76a36; border-radius:0 10px 10px 0; background:#faf1e7; padding:12px 15px; margin:0 0 22px; color:var(--ink); }
     .timeline { border:1px solid var(--line); border-radius:15px; padding:16px 14px 8px; margin:24px 0 28px; background:#fafcf8; }
     .timeline-title { font-size:.78rem; text-transform:uppercase; letter-spacing:.1em; font-weight:800; color:var(--green); margin:0 0 4px; }
     .timeline svg { display:block; width:100%; height:auto; } .timeline .note { font-size:.78rem; color:var(--muted); margin:0 0 4px; }
@@ -330,6 +331,45 @@
     }
     const escapeHTML = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const normalize = value => value.trim().toLowerCase().replace(/\s+/g,' ').replace(/[’‘]/g,"'").replace(/[.!?]+$/,'');
+    // Only accept alternatives that keep the same event order as the displayed timeline.
+    const alternativesBySentence = new Map([
+      ['By the time the train arrived, Amir _______ (finish) his coffee.',['finished']],
+      ['She _______ (lock) the door before she went to bed.',['locked']],
+      ['Tom was hungry because he _______ (skip) breakfast.',['skipped']],
+      ['By the time the guests arrived, we _______ (set) the table.',['set']],
+      ['When I opened the fridge, I realized someone _______ (eat) the cake.',['ate']],
+      ['By noon, the hikers _______ (reach) the summit.',['reached']],
+      ['The street was wet because it _______ (rain) earlier.',['rained']],
+      ['By the time I got home, my sister _______ (clean) the kitchen.',['cleaned']],
+      ['By the time Ella called, Max _______ (go) to sleep.',['went']],
+      ['Before the storm began, the sailors _______ (return) to port.',['returned']],
+      ['By the time the show started, the audience _______ (take) their seats.',['took']],
+      ['By the time the firefighters arrived, the family _______ (leave) the house.',['left']],
+      ['When Leo checked his bag, he realized he _______ (forget) his passport.',['forgot']],
+      ['By the time the teacher collected the papers, Ava _______ (finish) her essay.',['finished']],
+      ['By the time the guests sat down, the cook _______ (serve) the soup.',['served']],
+      ['By midnight, the engineers _______ (repair) the bridge.',['repaired']],
+      ['When I opened the box, I saw that someone _______ (break) the vase.',['broke']],
+      ['While Nina _______ (cook) dinner, the phone rang.',['cooked']],
+      ['While I _______ (walk) home, I saw a fox.',['walked']],
+      ['While Dad _______ (fix) the bike, the lights went out.',['fixed']],
+      ['While Eva _______ (paint), her friend knocked on the door.',['painted']],
+      ['While Ben _______ (wash) the dishes, someone rang the doorbell.',['washed']],
+      ['While we _______ (cycle) through the park, we spotted a deer.',['cycled']],
+      ['While Omar _______ (run) in the park, he heard thunder.',['ran']],
+      ['While we _______ (study), the fire alarm sounded.',['studied']],
+      ['While I _______ (cross) the street, a cyclist passed me.',['crossed']],
+      ['While the artists _______ (paint) the mural, it started to rain.',['painted']]
+    ]);
+    function gradeVerb(q, response) {
+      const typed = normalize(response);
+      const preferred = typed === normalize(q.answer);
+      const alternative = !preferred && (alternativesBySentence.get(q.sentence) || []).some(answer => typed === normalize(answer));
+      return {correct:preferred || alternative,alternative};
+    }
+    function alternativeNote(q) {
+      return `<p class="alternate-note"><strong>Also correct.</strong> ${q.tense === 'Past perfect' ? 'Past simple works here because the sentence already establishes the earlier event. Past perfect emphasizes that it was complete before the later event.' : 'Past simple works with “while” to describe the same time span. Past progressive emphasizes that the action was in progress.'}</p>`;
+    }
     const sentenceParts = q => {
       const [before, after] = q.sentence.split('_______');
       return [before, after.replace(/^\s*\([^)]*\)/, '')];
@@ -343,8 +383,8 @@
       const ending = answer ? sentenceParts(q)[1] : after;
       return `${escapeHTML(before)}<span class="blank">${answer ? escapeHTML(answer) : '_______'}</span>${escapeHTML(ending)}`;
     };
-    function comparisonHTML(yourLabel, yourValue, correctLabel, correctValue, correct) {
-      return `<div class="comparison ${correct ? 'single' : ''}">${correct ? '' : `<div class="compare-card incorrect"><span>${escapeHTML(yourLabel)}</span><strong>${escapeHTML(yourValue)}</strong></div>`}<div class="compare-card"><span>${escapeHTML(correctLabel)}</span><strong>${escapeHTML(correctValue)}</strong></div></div>`;
+    function comparisonHTML(yourLabel, yourValue, correctLabel, correctValue, correct, showBoth = false) {
+      return `<div class="comparison ${correct && !showBoth ? 'single' : ''}">${correct && !showBoth ? '' : `<div class="compare-card ${correct ? '' : 'incorrect'}"><span>${escapeHTML(yourLabel)}</span><strong>${escapeHTML(yourValue)}</strong></div>`}<div class="compare-card"><span>${escapeHTML(correctLabel)}</span><strong>${escapeHTML(correctValue)}</strong></div></div>`;
     }
     function attemptTimelineHTML(q, placed, slots, slotNames) {
       const target = slot => {
@@ -390,14 +430,14 @@
         event.preventDefault();
         const response = input.value.trim();
         if (!response) { document.getElementById('error').textContent = 'Please enter an answer first.'; input.focus(); return; }
-        const correct = normalize(response) === normalize(q.answer);
-        recordAnswer({yourAnswer:response,status:correct ? 'correct' : 'incorrect'});
-        showExplanation(response, correct);
+        const {correct,alternative} = gradeVerb(q,response);
+        recordAnswer({yourAnswer:response,alternativeAccepted:alternative,status:correct ? 'correct' : 'incorrect'});
+        showExplanation(response, correct, alternative);
       });
     }
-    function showExplanation(response, correct) {
+    function showExplanation(response, correct, alternative = false) {
       const q = activeQuestions[index];
-      app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s why it works.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${comparisonHTML('Your verb',response,'Correct verb',q.answer,correct)}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
+      app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${alternative ? '✓ Also correct' : correct ? '✓ Correct' : 'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s why it works.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${comparisonHTML(alternative ? 'Your answer · also correct' : 'Your verb',response,alternative ? 'Preferred teaching answer' : 'Correct verb',q.answer,correct,alternative)}${alternative ? alternativeNote(q) : ''}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
       document.getElementById('next').addEventListener('click', advance);
     }
     function advance() {
@@ -480,9 +520,9 @@
         const yourTimeline = slots.filter(slot => placed[slot] !== undefined).map(slot => `${slotNames[slot]}: ${q.timeline.events[placed[slot]].label}`).join('\n');
         const correctTimeline = q.timeline.events.map(event => `${slotNames[eventSlot(event)]}: ${event.label}`).join('\n');
         if (verbResponse !== null) {
-          const verbCorrect = normalize(verbResponse) === normalize(q.answer);
-          recordAnswer({yourAnswer:`Verb: ${verbResponse}\nTimeline: ${yourTimeline}`,correctAnswer:`Verb: ${q.answer}\nTimeline: ${correctTimeline}`,verbResponse,verbCorrect,timelineCorrect:correct,status:verbCorrect && correct ? 'correct' : 'incorrect'});
-          showCombinationExplanation(q, verbResponse, verbCorrect, placed, correct, slotNames, slots);
+          const {correct:verbCorrect,alternative} = gradeVerb(q,verbResponse);
+          recordAnswer({yourAnswer:`Verb: ${verbResponse}\nTimeline: ${yourTimeline}`,correctAnswer:`Verb: ${q.answer}\nTimeline: ${correctTimeline}`,verbResponse,verbCorrect,alternativeAccepted:alternative,timelineCorrect:correct,status:verbCorrect && correct ? 'correct' : 'incorrect'});
+          showCombinationExplanation(q, verbResponse, verbCorrect, placed, correct, slotNames, slots, alternative);
         } else {
           recordAnswer({yourAnswer:yourTimeline,correctAnswer:correctTimeline,timelineCorrect:correct,status:correct ? 'correct' : 'incorrect'});
           showTimelineExplanation(q, placed, correct, slotNames, slots);
@@ -493,8 +533,8 @@
       app.innerHTML = `${progressHTML()}<span class="result ${correct?'right':'wrong'}">${correct?'✓ Correct':'Not quite — keep going'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s the timeline.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${correct ? '' : attemptTimelineHTML(q,placed,slots,slotNames)}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
       document.getElementById('next').addEventListener('click', advance);
     }
-    function showCombinationExplanation(q, response, verbCorrect, placed, timelineCorrect, slotNames, slots) {
-      app.innerHTML = `${progressHTML()}<span class="result ${verbCorrect && timelineCorrect ? 'right' : 'wrong'}">${verbCorrect && timelineCorrect ? '✓ Both correct' : 'Keep practising'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s how both fit.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${comparisonHTML('Your verb',response,'Correct verb',q.answer,verbCorrect)}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineCorrect ? '' : attemptTimelineHTML(q,placed,slots,slotNames)}${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
+    function showCombinationExplanation(q, response, verbCorrect, placed, timelineCorrect, slotNames, slots, alternative = false) {
+      app.innerHTML = `${progressHTML()}<span class="result ${verbCorrect && timelineCorrect ? 'right' : 'wrong'}">${verbCorrect && timelineCorrect ? '✓ Both correct' : 'Keep practising'}</span><p class="eyebrow">${escapeHTML(q.tense)} · explanation</p><h2>Here’s how both fit.</h2><p class="sentence">${sentenceHTML(q,q.answer)}</p>${comparisonHTML(alternative ? 'Your answer · also correct' : 'Your verb',response,alternative ? 'Preferred teaching answer' : 'Correct verb',q.answer,verbCorrect,alternative)}${alternative ? alternativeNote(q) : ''}<p class="explanation">${escapeHTML(q.explanation)}</p>${timelineCorrect ? '' : attemptTimelineHTML(q,placed,slots,slotNames)}${timelineHTML(q.timeline)}<button type="button" id="next">${index === activeQuestions.length-1 ? 'See your results →' : 'Next question →'}</button>`;
       document.getElementById('next').addEventListener('click', advance);
     }
     function showSpotQuestion() {
@@ -547,7 +587,7 @@
         const completed = run.entries.filter(entry => entry.status !== 'unanswered');
         const unanswered = run.entries.length - completed.length;
         const correct = completed.filter(entry => entry.status === 'correct').length;
-        const details = completed.map(entry => `<li><strong>${escapeHTML(entry.prompt)}</strong><p class="history-${entry.status}">${entry.status === 'correct' ? 'Correct' : 'Incorrect'}</p><p><b>Your answer:</b> ${escapeHTML(entry.yourAnswer || '—')}</p><p><b>Correct answer:</b> ${escapeHTML(entry.correctAnswer || '—')}</p></li>`).join('');
+        const details = completed.map(entry => `<li><strong>${escapeHTML(entry.prompt)}</strong><p class="history-${entry.status}">${entry.alternativeAccepted ? (entry.status === 'correct' ? 'Correct · accepted alternative' : 'Incorrect overall · verb accepted alternative') : entry.status === 'correct' ? 'Correct' : 'Incorrect'}</p><p><b>Your answer:</b> ${escapeHTML(entry.yourAnswer || '—')}</p><p><b>${entry.alternativeAccepted ? 'Preferred answer' : 'Correct answer'}:</b> ${escapeHTML(entry.correctAnswer || '—')}</p></li>`).join('');
         const label = {verbs:'Fill in the verb',timeline:'Place the events',spot:'Spot the mistake',combination:'Combinations'}[run.mode] || run.mode;
         return `<article class="history-run"><h2>${escapeHTML(label)} · ${correct}/${run.entries.length} correct</h2><p class="muted small">${escapeHTML(new Date(run.startedAt).toLocaleString())} · ${unanswered} unanswered · ${run.finishedAt ? 'Completed' : 'Unfinished'}</p>${run.finishedAt ? '' : `<button type="button" class="nav-button" data-resume="${escapeHTML(run.id)}">Resume →</button>`}${completed.length ? `<details><summary>Review answered questions</summary><ol>${details}</ol></details>` : ''}</article>`;
       }).join('');
