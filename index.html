@@ -129,7 +129,7 @@
       { sentence:'Lena _______ (write) three letters during her holiday last year.', answer:'wrote', tense:'Past simple', explanation:'“Last year” places the finished activity in the past. The irregular past-simple form of “write” is “wrote”.' },
       { sentence:'By the time the train arrived, Amir _______ (finish) his coffee.', answer:'had finished', tense:'Past perfect', explanation:'Finishing the coffee happened before the train arrived. Use had + past participle for the earlier past event.', timeline:{ events:[{kind:'point',label:'Coffee finished',x:190},{kind:'point',label:'Train arrived',x:470}] } },
       { sentence:'She _______ (lock) the door before she went to bed.', answer:'had locked', tense:'Past perfect', explanation:'Locking the door was complete before she went to bed. The earlier action takes the past perfect: had locked.', timeline:{ events:[{kind:'point',label:'Door locked',x:190},{kind:'point',label:'Went to bed',x:470}] } },
-      { sentence:'When we reached the cinema, the film _______ (begin).', answer:'had begun', tense:'Past perfect', explanation:'The film began before we reached the cinema. “Begin” has the past participle “begun”, so the earlier event is “had begun”.', timeline:{ events:[{kind:'point',label:'Film began',x:190},{kind:'point',label:'We arrived',x:470}] } },
+      { sentence:'We reached the cinema at 8 p.m., but the film _______ (begin) at 7:40 p.m.', legacyPrompt:'When we reached the cinema, the film _______ (begin).', answer:'had begun', tense:'Past perfect', explanation:'The film started at 7:40 p.m., before our 8 p.m. arrival. “Had begun” emphasizes the earlier start; “began” also works because the times make the order clear.', timeline:{ events:[{kind:'point',label:'Film began',x:190},{kind:'point',label:'We arrived',x:470}] } },
       { sentence:'Tom was hungry because he _______ (skip) breakfast.', answer:'had skipped', tense:'Past perfect', explanation:'Skipping breakfast happened before Tom felt hungry. Use had + past participle to show that earlier cause.', timeline:{ events:[{kind:'point',label:'Skipped breakfast',x:190},{kind:'point',label:'Felt hungry',x:470}] } },
       { sentence:'At eight o’clock last night, I _______ (read) a novel.', answer:'was reading', tense:'Past progressive', explanation:'Reading was in progress at a particular past moment. Use was/were + -ing: “I was reading”.', timeline:{ events:[{kind:'duration',label:'I was reading',start:130,end:520},{kind:'point',label:'8 p.m.',x:350}] } },
       { sentence:'While Nina _______ (cook) dinner, the phone rang.', answer:'was cooking', tense:'Past progressive', explanation:'Cooking was already in progress when the phone rang. Use “was cooking” for the longer background action.', timeline:{ events:[{kind:'duration',label:'Nina was cooking',start:120,end:510},{kind:'point',label:'Phone rang',x:360}] } },
@@ -152,7 +152,7 @@
       { sentence:'After the referee blew the whistle, the players _______ (stop).', answer:'stopped', tense:'Past simple', explanation:'The whistle sounded first, and then the players stopped. Both actions are complete past events; “stop” doubles its final consonant before -ed.', timeline:{ events:[{kind:'point',label:'Whistle blew',x:190},{kind:'point',label:'Players stopped',x:470}] } },
       { sentence:'Last summer, Aisha _______ (swim) across the lake.', answer:'swam', tense:'Past simple', explanation:'“Last summer” is a completed time. “Swam” is the past-simple form of “swim”.' },
       { sentence:'By the time I got home, my sister _______ (clean) the kitchen.', answer:'had cleaned', tense:'Past perfect', explanation:'Cleaning was already finished when I got home. Use “had cleaned” for the earlier action.', timeline:{ events:[{kind:'point',label:'Kitchen cleaned',x:190},{kind:'point',label:'I got home',x:470}] } },
-      { sentence:'When the teacher checked, the class _______ (complete) the test.', answer:'had completed', tense:'Past perfect', explanation:'The class completed the test before the teacher checked. Use had + past participle for the earlier event.', timeline:{ events:[{kind:'point',label:'Test completed',x:190},{kind:'point',label:'Teacher checked',x:470}] } },
+      { sentence:'At noon, the teacher checked the tests, but the class _______ (complete) them by 11 a.m.', legacyPrompt:'When the teacher checked, the class _______ (complete) the test.', answer:'had completed', tense:'Past perfect', explanation:'The class finished by 11 a.m., before the teacher checked at noon. “Had completed” highlights the earlier completion; “completed” is also grammatical.', timeline:{ events:[{kind:'point',label:'Test completed',x:190},{kind:'point',label:'Teacher checked',x:470}] } },
       { sentence:'Before the storm began, the sailors _______ (return) to port.', answer:'had returned', tense:'Past perfect', explanation:'The sailors reached port before the storm began. “Had returned” marks the earlier completed event.', timeline:{ events:[{kind:'point',label:'Sailors returned',x:190},{kind:'point',label:'Storm began',x:470}] } },
       { sentence:'By the time Ella called, Max _______ (go) to sleep.', answer:'had gone', tense:'Past perfect', explanation:'Max went to sleep before Ella called. The past participle of “go” is “gone”, giving “had gone”.', timeline:{ events:[{kind:'point',label:'Max went to sleep',x:190},{kind:'point',label:'Ella called',x:470}] } },
       { sentence:'At six yesterday evening, my parents _______ (prepare) dinner.', answer:'were preparing', tense:'Past progressive', explanation:'Preparing dinner was in progress at six. The plural subject “parents” takes “were preparing”.', timeline:{ events:[{kind:'duration',label:'Parents were preparing',start:110,end:520},{kind:'point',label:'6 p.m.',x:350}] } },
@@ -170,13 +170,13 @@
       { sentence:'Three weeks ago, Sam _______ (send) the parcel.', answer:'sent', tense:'Past simple', explanation:'“Three weeks ago” identifies a finished past time. “Sent” is the irregular past-simple form of “send”.' },
       { sentence:'During the festival last year, the band _______ (play) twice.', answer:'played', tense:'Past simple', explanation:'The festival happened last year, so use the past simple for the completed performances: “played”.' },
       { sentence:'By the time the show started, the audience _______ (take) their seats.', answer:'had taken', tense:'Past perfect', explanation:'The audience took their seats before the show started. Past perfect, had + past participle, highlights that earlier completion.', timeline:sequence('Audience seated','Show started') },
-      { sentence:'When I arrived at the library, it _______ (close) for the day.', answer:'had closed', tense:'Past perfect', explanation:'The library closed before I arrived. Use “had closed” to show that the closing was already complete.', timeline:sequence('Library closed','I arrived') },
+      { sentence:'I arrived at the library at 6 p.m., but it _______ (close) at 5 p.m.', legacyPrompt:'When I arrived at the library, it _______ (close) for the day.', answer:'had closed', tense:'Past perfect', explanation:'The library closed at 5 p.m., before I arrived at 6 p.m. “Had closed” emphasizes the earlier event; “closed” also works.', timeline:sequence('Library closed','I arrived') },
       { sentence:'By the time the firefighters arrived, the family _______ (leave) the house.', answer:'had left', tense:'Past perfect', explanation:'The family left before the firefighters arrived. “Had left” marks the earlier completed event.', timeline:sequence('Family left','Firefighters arrived') },
       { sentence:'When Leo checked his bag, he realized he _______ (forget) his passport.', answer:'had forgotten', tense:'Past perfect', explanation:'Leo forgot the passport before he checked his bag. The past participle of “forget” is “forgotten”.', timeline:sequence('Passport forgotten','Leo checked bag') },
       { sentence:'By the time the teacher collected the papers, Ava _______ (finish) her essay.', answer:'had finished', tense:'Past perfect', explanation:'Ava finished her essay before the teacher collected the papers. Use “had finished” for the earlier event.', timeline:sequence('Essay finished','Papers collected') },
-      { sentence:'When we reached the station, the last bus _______ (depart).', answer:'had departed', tense:'Past perfect', explanation:'The last bus departed before we reached the station. Use “had departed” for the earlier past event.', timeline:sequence('Bus departed','We arrived') },
+      { sentence:'We reached the station at 9 p.m., but the last bus _______ (depart) at 8 p.m.', legacyPrompt:'When we reached the station, the last bus _______ (depart).', answer:'had departed', tense:'Past perfect', explanation:'The last bus departed at 8 p.m., before we arrived at 9 p.m. “Had departed” stresses that it was already gone; “departed” also works.', timeline:sequence('Bus departed','We arrived') },
       { sentence:'By midnight, the engineers _______ (repair) the bridge.', answer:'had repaired', tense:'Past perfect', explanation:'The repair was complete by the past deadline of midnight. Past perfect emphasizes that completion.', timeline:sequence('Bridge repaired','Midnight') },
-      { sentence:'When she returned, her brother _______ (wash) the dishes.', answer:'had washed', tense:'Past perfect', explanation:'Her brother washed the dishes before she returned. “Had washed” makes that order explicit.', timeline:sequence('Dishes washed','She returned') },
+      { sentence:'She returned home at 6 p.m., but her brother _______ (wash) the dishes at 5 p.m.', legacyPrompt:'When she returned, her brother _______ (wash) the dishes.', answer:'had washed', tense:'Past perfect', explanation:'Her brother washed the dishes at 5 p.m., before her 6 p.m. return. “Had washed” emphasizes the earlier action; “washed” also works.', timeline:sequence('Dishes washed','She returned') },
       { sentence:'By the time the guests sat down, the cook _______ (serve) the soup.', answer:'had served', tense:'Past perfect', explanation:'The cook served the soup before the guests sat down. Use “had served” for the earlier action.', timeline:sequence('Soup served','Guests sat down') },
       { sentence:'When I opened the box, I saw that someone _______ (break) the vase.', answer:'had broken', tense:'Past perfect', explanation:'The vase broke before I opened the box and saw it. The past participle of “break” is “broken”.', timeline:sequence('Vase broken','Box opened') },
       { sentence:'While Omar _______ (run) in the park, he heard thunder.', answer:'was running', tense:'Past progressive', explanation:'Running was in progress when Omar heard thunder. Use was + -ing for the ongoing background action.', timeline:overlap('Omar was running','Heard thunder') },
@@ -241,7 +241,7 @@
     const finishedTime = /\b(yesterday|last (?:night|monday|friday|year|saturday|winter|summer|spring)|ago|in 2018|the day before)\b/i;
     function clarifySpot(item) {
       if (!item.wrong) return item;
-      const oldKey = item.q.sentence + '|' + item.wrong;
+      const oldKey = (item.q.legacyPrompt || item.q.sentence) + '|' + item.wrong;
       const start = item.q.sentence[0];
       const anchored = finishedTime.test(item.q.sentence) ? item.q.sentence
         : 'Yesterday, ' + (start === 'I' || start === 'T' && item.q.sentence.startsWith('Tom ') ? start : start.toLowerCase()) + item.q.sentence.slice(1);
@@ -279,7 +279,7 @@
       return result;
     }
     const bankForMode = selectedMode => selectedMode === 'spot' ? mistakeBank : selectedMode === 'verbs' ? questions : questions.filter(q => q.timeline);
-    const questionKey = (selectedMode, item) => selectedMode + ':' + (selectedMode === 'spot' ? (item.id || item.q.sentence + '|' + (item.wrong || 'no-mistake')) : item.sentence);
+    const questionKey = (selectedMode, item) => selectedMode + ':' + (selectedMode === 'spot' ? (item.id || (item.q.legacyPrompt || item.q.sentence) + '|' + (item.wrong || 'no-mistake')) : (item.legacyPrompt || item.sentence));
     function favoredSample(items, count, selectedMode) {
       const latest = new Map();
       for (const run of runs) for (const entry of run.entries) latest.set(entry.key, entry.status);
@@ -320,6 +320,13 @@
       activeRun = run;
       mode = run.mode;
       activeQuestions = run.entries.map(entry => available.get(entry.key));
+      // An unfinished run may have been started before a question's wording was clarified.
+      run.entries.forEach((entry,i) => {
+        if (entry.status !== 'unanswered') return;
+        const item = activeQuestions[i], q = mode === 'spot' ? item.q : item;
+        entry.prompt = mode === 'spot' ? fullSentence(q,item.wrong || q.answer) : mode === 'timeline' ? fullSentence(q,q.answer) : q.sentence;
+      });
+      saveRuns();
       score = run.entries.filter(entry => entry.status === 'correct').length;
       combinationVerbScore = run.entries.filter(entry => entry.verbCorrect).length;
       combinationTimelineScore = run.entries.filter(entry => entry.timelineCorrect).length;
@@ -334,6 +341,7 @@
     // Only accept alternatives that keep the same event order as the displayed timeline.
     const alternativesBySentence = new Map([
       ['By the time the train arrived, Amir _______ (finish) his coffee.',['finished']],
+      ['We reached the cinema at 8 p.m., but the film _______ (begin) at 7:40 p.m.',['began']],
       ['She _______ (lock) the door before she went to bed.',['locked']],
       ['Tom was hungry because he _______ (skip) breakfast.',['skipped']],
       ['By the time the guests arrived, we _______ (set) the table.',['set']],
@@ -341,14 +349,18 @@
       ['By noon, the hikers _______ (reach) the summit.',['reached']],
       ['The street was wet because it _______ (rain) earlier.',['rained']],
       ['By the time I got home, my sister _______ (clean) the kitchen.',['cleaned']],
+      ['At noon, the teacher checked the tests, but the class _______ (complete) them by 11 a.m.',['completed']],
       ['By the time Ella called, Max _______ (go) to sleep.',['went']],
       ['Before the storm began, the sailors _______ (return) to port.',['returned']],
       ['By the time the show started, the audience _______ (take) their seats.',['took']],
+      ['I arrived at the library at 6 p.m., but it _______ (close) at 5 p.m.',['closed']],
       ['By the time the firefighters arrived, the family _______ (leave) the house.',['left']],
+      ['We reached the station at 9 p.m., but the last bus _______ (depart) at 8 p.m.',['departed']],
       ['When Leo checked his bag, he realized he _______ (forget) his passport.',['forgot']],
       ['By the time the teacher collected the papers, Ava _______ (finish) her essay.',['finished']],
       ['By the time the guests sat down, the cook _______ (serve) the soup.',['served']],
       ['By midnight, the engineers _______ (repair) the bridge.',['repaired']],
+      ['She returned home at 6 p.m., but her brother _______ (wash) the dishes at 5 p.m.',['washed']],
       ['When I opened the box, I saw that someone _______ (break) the vase.',['broke']],
       ['While Nina _______ (cook) dinner, the phone rang.',['cooked']],
       ['While I _______ (walk) home, I saw a fox.',['walked']],
