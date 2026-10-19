@@ -35,7 +35,7 @@
     .blank { color:var(--green); letter-spacing:.03em; white-space:nowrap; }
     label { display:block; font-weight:750; margin-bottom:9px; }
     input { display:block; width:100%; max-width:430px; border:1.5px solid #becfc0; border-radius:11px; background:#fff; padding:12px 15px; font:inherit; font-size:1.1rem; color:var(--ink); min-height:50px; }
-    input::placeholder { color:#8b9b91; } form button { margin-top:17px; } .error { color:var(--red); font-size:.9rem; line-height:1.4; margin:8px 0 0; min-height:2.8em; }
+    input::placeholder { color:#8b9b91; } form button { margin-top:17px; } .error { color:var(--red); font-size:.9rem; line-height:1.4; margin:8px 0 0; min-height:4.2em; }
     .result { display:inline-block; padding:6px 13px; border-radius:99px; font-size:.83rem; font-weight:800; margin-bottom:19px; } .right { background:var(--mint); color:#20583b; } .wrong { background:#fae9e2; color:#8c4335; }
     .answer-box { border-left:4px solid var(--green); background:#f0f5ee; padding:17px 20px; border-radius:0 12px 12px 0; margin:22px 0; }
     .answer-box span { display:block; font-size:.78rem; font-weight:800; text-transform:uppercase; letter-spacing:.1em; color:var(--green); margin-bottom:5px; }
@@ -379,6 +379,39 @@
       const alternative = !preferred && (alternativesBySentence.get(q.sentence) || []).some(answer => typed === normalize(answer));
       return {correct:preferred || alternative,alternative};
     }
+    function oneExtraOrMissingCharacter(first, second) {
+      if (Math.abs(first.length - second.length) !== 1) return false;
+      const shorter = first.length < second.length ? first : second;
+      const longer = first.length < second.length ? second : first;
+      let i = 0, j = 0, skipped = false;
+      while (i < shorter.length) {
+        if (shorter[i] === longer[j]) { i++; j++; }
+        else { if (skipped) return false; skipped = true; j++; }
+      }
+      return true;
+    }
+    function looksLikeTypo(q, response) {
+      if (gradeVerb(q,response).correct) return false;
+      const typed = normalize(response);
+      return [q.answer,...(alternativesBySentence.get(q.sentence) || [])].some(answer => oneExtraOrMissingCharacter(typed,normalize(answer)));
+    }
+    function makeTypoReviewer(input, q) {
+      const error = document.getElementById('error');
+      let pending = null;
+      input.addEventListener('input', () => { pending = null; error.textContent = ''; });
+      return response => {
+        const typed = normalize(response);
+        if (looksLikeTypo(q,response) && pending !== typed) {
+          pending = typed;
+          error.textContent = 'Possible extra or missing character. Review your answer or submit again.';
+          input.focus();
+          return true;
+        }
+        pending = null;
+        error.textContent = '';
+        return false;
+      };
+    }
     function alternativeNote(q) {
       return `<p class="alternate-note"><strong>Also correct.</strong> ${q.tense === 'Past perfect' ? 'Past simple works here because the sentence already establishes the earlier event. Past perfect emphasizes that it was complete before the later event.' : 'Past simple works with “while” to describe the same time span. Past progressive emphasizes that the action was in progress.'}</p>`;
     }
@@ -437,11 +470,13 @@
       const q = activeQuestions[index];
       app.innerHTML = `${progressHTML()}<p class="eyebrow">Fill in the blank</p><h2>What form of the verb fits?</h2><p class="sentence">${sentenceHTML(q)}</p><form id="answer-form" novalidate><label for="answer">Your answer</label><input id="answer" name="answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the whole verb phrase" aria-describedby="error"><p class="error" id="error" role="alert"></p><button type="submit">Check answer →</button></form>`;
       const input = document.getElementById('answer');
+      const shouldReview = makeTypoReviewer(input,q);
       input.focus();
       document.getElementById('answer-form').addEventListener('submit', event => {
         event.preventDefault();
         const response = input.value.trim();
         if (!response) { document.getElementById('error').textContent = 'Please enter an answer first.'; input.focus(); return; }
+        if (shouldReview(response)) return;
         const {correct,alternative} = gradeVerb(q,response);
         recordAnswer({yourAnswer:response,alternativeAccepted:alternative,status:correct ? 'correct' : 'incorrect'});
         showExplanation(response, correct, alternative);
@@ -467,12 +502,14 @@
       const q = activeQuestions[index];
       app.innerHTML = `${progressHTML()}<p class="eyebrow">Combinations · step 1 of 2</p><h2>Type the complete verb phrase.</h2><p class="sentence">${sentenceHTML(q)}</p><form id="answer-form" novalidate><label for="answer">Your answer</label><input id="answer" name="answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the whole verb phrase" aria-describedby="error"><p class="error" id="error" role="alert"></p><button type="submit">Continue to timeline →</button></form>`;
       const input = document.getElementById('answer');
+      const shouldReview = makeTypoReviewer(input,q);
       input.value = activeRun.entries[index].verbResponse || '';
       input.focus();
       document.getElementById('answer-form').addEventListener('submit', event => {
         event.preventDefault();
         const response = input.value.trim();
         if (!response) { document.getElementById('error').textContent = 'Please enter an answer first.'; input.focus(); return; }
+        if (shouldReview(response)) return;
         activeRun.entries[index].verbResponse = response;
         saveRuns();
         showTimelineQuestion(response);
