@@ -13,7 +13,7 @@
     .brand { font-size:.78rem; font-weight:800; letter-spacing:.17em; text-transform:uppercase; color:var(--green); }
     .tag { border:1px solid #cdded0; border-radius:99px; padding:6px 12px; color:var(--green); font-size:.78rem; font-weight:700; white-space:nowrap; }
     .header-actions { display:flex; align-items:center; gap:8px; } .nav-button { background:#e5efe4; color:var(--green); border:1px solid #cdded0; padding:7px 12px; min-height:38px; font-size:.83rem; }
-    .nav-button:hover { background:#d2e5d5; color:var(--green); }
+    .nav-button:hover { background:#d2e5d5; color:var(--green); } .step-back { margin:0 0 16px; }
     .history-run { border:1px solid var(--line); border-radius:14px; padding:17px; margin:12px 0; background:#fafcf8; }
     .history-run h2 { font-family:inherit; font-size:1.05rem; font-weight:800; margin:0 0 4px; letter-spacing:0; }
     .history-run p { margin:0 0 10px; } .history-run details { margin-top:12px; } .history-run summary { cursor:pointer; font-weight:750; color:var(--green); }
@@ -400,6 +400,7 @@
       const q = activeQuestions[index];
       app.innerHTML = `${progressHTML()}<p class="eyebrow">Combinations · step 1 of 2</p><h2>Type the complete verb phrase.</h2><p class="sentence">${sentenceHTML(q)}</p><form id="answer-form" novalidate><label for="answer">Your answer</label><input id="answer" name="answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the whole verb phrase" aria-describedby="error"><p class="error" id="error" role="alert"></p><button type="submit">Continue to timeline →</button></form>`;
       const input = document.getElementById('answer');
+      input.value = activeRun.entries[index].verbResponse || '';
       input.focus();
       document.getElementById('answer-form').addEventListener('submit', event => {
         event.preventDefault();
@@ -414,10 +415,16 @@
       const q = activeQuestions[index];
       const order = shuffle(q.timeline.events.map((_, i) => i));
       let selected = null;
-      const placed = {};
       const slots = ['earlier','during','later','ongoing'];
       const slotNames = {ongoing:'Ongoing action',during:'Moment during it',earlier:'Earlier',later:'Later'};
-      app.innerHTML = `${progressHTML()}<p class="eyebrow">${verbResponse === null ? 'Place the events' : 'Combinations · step 2 of 2'}</p><h2>What happened when?</h2><p class="sentence">${sentenceHTML(q,verbResponse === null ? q.answer : verbResponse)}</p><p class="muted small">Select an event, then select its spot on the timeline. Select it again to move it.${verbResponse === null ? '' : ' You’ll see both answers after this step.'}</p><div id="placement-panel"></div><p class="error" id="error" role="alert"></p><button type="button" id="check-timeline">Check timeline →</button>`;
+      const savedDraft = verbResponse === null ? null : activeRun.entries[index].timelineDraft;
+      const placed = {};
+      if (savedDraft && typeof savedDraft === 'object') {
+        for (const [slot, eventIndex] of Object.entries(savedDraft)) {
+          if (slots.includes(slot) && Number.isInteger(eventIndex) && eventIndex >= 0 && eventIndex < q.timeline.events.length && !Object.values(placed).includes(eventIndex)) placed[slot] = eventIndex;
+        }
+      }
+      app.innerHTML = `${progressHTML()}<p class="eyebrow">${verbResponse === null ? 'Place the events' : 'Combinations · step 2 of 2'}</p><h2>What happened when?</h2><p class="sentence">${sentenceHTML(q,verbResponse === null ? q.answer : verbResponse)}</p><p class="muted small">Select an event, then select its spot on the timeline. Select it again to move it.${verbResponse === null ? '' : ' You’ll see both answers after this step.'}</p>${verbResponse === null ? '' : '<button type="button" class="nav-button step-back" id="back-to-verb">← Edit verb</button>'}<div id="placement-panel"></div><p class="error" id="error" role="alert"></p><button type="button" id="check-timeline">Check timeline →</button>`;
       function renderPanel(focusId) {
         const events = order.map(i => {
           const slot = Object.keys(placed).find(key => placed[key] === i);
@@ -437,6 +444,7 @@
           }
           for (const key of slots) if (placed[key] === selected) delete placed[key];
           placed[slot] = selected;
+          if (verbResponse !== null) { activeRun.entries[index].timelineDraft = {...placed}; saveRuns(); }
           selected = null;
           document.getElementById('error').textContent = '';
           renderPanel(`slot-${slot}`);
@@ -447,6 +455,7 @@
         }
       }
       renderPanel();
+      if (verbResponse !== null) document.getElementById('back-to-verb').addEventListener('click', () => showCombinationVerbQuestion());
       document.getElementById('check-timeline').addEventListener('click', () => {
         if (Object.keys(placed).length !== q.timeline.events.length) {
           document.getElementById('error').textContent = 'Place both events before checking.';
